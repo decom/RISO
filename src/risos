@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#inclui a biblioteca de funções
-source biblioteca.sh
 
 #Variáveis do script
 dir_riso=/usr/riso
@@ -15,6 +13,10 @@ riso_service=/etc/avahi/services/riso.service
 tab_part=$dir_img/tab_part
 riso_part=$dir_riso/riso.part
 arq_log=$dir_riso/riso.log
+biblioteca=$dir_riso/biblioteca.sh
+
+#inclui a biblioteca de funções
+source $biblioteca
 
 #Função de Log
 log(){

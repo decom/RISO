@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#inclui a biblioteca de funções
-source biblioteca.sh
-
 #Variáveis do script
 dir_riso=/usr/riso
 dir_img=$dir_riso/imagens
@@ -15,6 +12,11 @@ tab_part=$dir_img/tab_part
 riso_conf=$dir_riso/riso.conf
 riso_part=$dir_riso/riso.part
 arq_log=$dir_riso/riso.log
+biblioteca=$dir_riso/biblioteca.sh
+
+
+#inclui a biblioteca de funções
+source $biblioteca
 
 #Função de Log
 log(){
