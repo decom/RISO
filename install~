@@ -41,7 +41,7 @@ instala_riso() {
     chmod +x /usr/bin/riso
     
     echo "Movendo script..."
-    cp ./src/biblioteca.sh /usr/riso/bilioteca.h
+    cp ./src/biblioteca.sh /usr/riso/bilioteca.sh
     cp ./src/riso /usr/riso/riso
     chmod +x /usr/riso/riso
     cp ./conf/riso.conf /usr/riso/riso.conf
@@ -74,7 +74,7 @@ instala_risos() {
     chmod +x /usr/bin/risos
     
     echo "Movendo script..."
-    cp ./src/biblioteca.sh /usr/riso/bilioteca.h
+    cp ./src/biblioteca.sh /usr/riso/bilioteca.sh
     cp ./src/risos /usr/riso/risos
     chmod +x /usr/riso/risos
     
