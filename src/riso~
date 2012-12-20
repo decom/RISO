@@ -524,8 +524,8 @@ atualiza() {
 		dialog \
 	        --ok-label 'OK' \
         	--title 'Atenção' \
-        	--msgbox '\n    RISO atualizado com sucesso.\n' \
-		    7 40
+        	--msgbox '\n   RISO atualizado com sucesso.\n' \
+		    7 39
 		
 		bash /usr/riso/riso
 		exit
