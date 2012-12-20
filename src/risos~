@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#inclui a biblioteca de funções
+source biblioteca.h
+
 #Variáveis do script
 dir_riso=/usr/riso
 dir_img=$dir_riso/imagens
