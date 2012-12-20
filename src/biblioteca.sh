@@ -53,7 +53,7 @@ atualiza() {
 		dialog \
 	        --ok-label 'OK' \
         	--title 'Atenção' \
-        	--msgbox '\n   RISO atualizado com sucesso.\n' \
+        	--msgbox '\n  Programa atualizado com sucesso.\n' \
 		    7 39
 		
 		bash /usr/riso/riso
@@ -64,7 +64,7 @@ atualiza() {
 		--title 'ERRO' \
 		--msgbox '\n   Esta versão já é a mais recente'\
 		7 40
-		log "ERRO: RISO já é a versão mais nova."
+		log "ERRO: Esta já é a versão mais nova."
 	fi
 }
 

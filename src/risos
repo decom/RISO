@@ -252,58 +252,6 @@ cria_rec() {
 	
 }
 
-#Atualiza riso.
-atualiza() {
-
-	log "Iniciando atualização do script."
-	log "Verificando disponibilidade do servidor de atualização."
-	ping -q -c 1 200.131.37.236 > /dev/null 2>&1
-	if [ "$?" -eq "0" ]; then
-		log "Iniciando download do script novo."
-		(wget 200.131.37.236/riso/risos0.5 -O /usr/riso/risos && log "RISO atualizado com sucesso.") || log "ERRO: Não foi possível baixar o novo script."
-		
-		#Menssagem de atualizado com sucesso.
-		dialog \
-	        --ok-label 'OK' \
-        	--title 'Atenção' \
-        	--msgbox '\n   RISOS atualizado com sucesso.\n' \
-		    7 39
-		
-		bash /usr/riso/risos
-		exit
-	else
-		dialog \
-		--ok-label 'OK' \
-		--title 'ERRO' \
-		--msgbox '\n   Esta versão já é a mais recente.'\
-		7 40
-		log "ERRO: RISO já é a versão mais nova."
-	fi
-	
-}
-
-#Pessoas que desenvolveram esse material.
-creditos() {
-
-	dialog \
-	--ok-label 'OK' \
-	--title 'Creditos' \
-	--msgbox '                                       \n
-		 CENTRO FEDERAL DE EDUCAÇAO TECNOLOGICA  \n
-		        Engenharia da Computaçao         \n
-		                                         \n
-		      Cristiano Goulart Lopes Dias       \n
-		    Vinicius Tinti de Paula Oliveira     \n
-		       Germano Teixeira de Miranda       \n
-		        Gabriel de Souza Brandao         \n
-		         Marcio J. Menezes Jr.           \n
-		    Gabriel Machado de Castro Fonseca    \n
-		      André Luiz Silveira Herculano      \n
-		                                         \n
-		           www.dgo.cefetmg.br            \n
-		                                         \n'\
-		  0 0
-}
 
 #Notificação para imagem criada com sucesso
 linux_criado() {
@@ -373,18 +321,6 @@ torrents_criados() {
 	--title 'Atenção' \
 	--msgbox '\nTorrents do Windows e Linux criados com sucesso.\n' \
 		8 0
-}
-
-#Acredite isso é um help.
-helpi() {
-
-	dialog \
-	--ok-label 'OK' \
-	--title 'Help' \
-	--msgbox 'Envie um e-mail com suas duvidas e sugestões \n
-para: "germano@comp.eng.br" e responderei o\n
-mais rápido possível.' \
-		0 0
 }
 
 #Cria um livecd do SO com o R.I.S.O instalado.
