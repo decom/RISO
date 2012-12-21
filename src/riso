@@ -504,20 +504,18 @@ baixa_rec() {
 #Checklist de seleção.
 menu_instala_imagens() {
 
-	opcao=$( dialog --stdout \
-	--ok-label 'Confirmar'   \
-	--checklist 'Quais imagens deseja instalar:' \
-	0 0 0 \
-	Windows '' ON  \
-	Linux '' ON  )
+        opcao="$(zenity --width=400 --height=400 --list --column "Instalar imagens" --title="Quais imagens deseja instalar:" \
+                "Windows"          \
+                "Linux"            \ 
+                "Windows e Linux"  )"
 
-	# De acordo com a opção escolhida, executa funcoes
-	case $opcao in
-		'"Windows"') instala_windows;;
-		'"Linux"') instala_linux;;
-		'"Windows" "Linux"') instala;;
-	esac
-	
+        # De acordo com a opção escolhida, executa funcoes
+        case $opcao in
+                "Windows") instala_windows;;
+                "Linux") instala_linux;;
+                "Windows e Linux") instala;;
+        esac
+
 }
 
 #Checklist de seleção.
@@ -541,39 +539,33 @@ menu_baixa_imagens() {
 
 #Menu principal.
 menu() {
+        while : ; do
+        opcao="$(zenity --width=400 --height=400 --list --column "RISO - 0.5" \
+                --title="Menu" \
+              "Instalar imagens ja existentes"   \
+               "Baixar e instalar novas imagens"  \
+"Baixar e instalar imagem de recuperação(LIVE_CD)"\
+                     "Atualiza"                  \
+                     "Configurações"             \
+                     "Creditos"                   \
+                        "Help"                    \ )"
 
-	while : ; do
-	opcao=$(
-		dialog --stdout                                         \
-		--ok-label 'Confirmar'                                  \
-		--cancel-label 'Sair'                                   \
-		--title 'RISO - 0.5'                                    \
-		--menu 'Escolha o que voce quer fazer:'                 \
-			0 0 0                                               \
-			1 'Instalar imagens ja existentes'                  \
-			2 'Baixar e instalar novas imagens'                 \
-			3 'Baixar e instalar imagem de recuperação(LIVE_CD)'\
-			4 'Atualiza'                                        \
-			5 'Configurações'                                   \
-			6 'Creditos'                                        \
-			7 'Help'                                            )
-	
-		# ESC, sai do programa...
-		[ $? -ne 0 ] && break
-	
-		# De acordo com a opção escolhida, executa funçao
-		case $opcao in
-		1) menu_instala_imagens;;
-		2) menu_baixa_imagens;;
-		3) baixa_rec; instala_rec;;
-		4) atualiza;;
-		5) configuracoes;;
-		6) creditos;;
-		7) helpi;;
-	esac	
+                # ESC, sai do programa...
+                [ $? -ne 0 ] && break
 
-	done
-	
+                # De acordo com a opção escolhida, executa funçao
+                case $opcao in
+                "Instalar imagens ja existentes" ) menu_instala_imagens;;
+                "Baixar e instalar novas imagens") menu_baixa_imagens;;
+                "Baixar e instalar imagem de recuperação(LIVE_CD)") baixa_rec; instala_rec;;
+                "Atualiza") atualiza;;
+                "Configurações") configuracoes;;
+                "Creditos") creditos;;
+                "Help") helpi;;
+        esac
+
+        done
+
 }
 
 #Avalia argumentos.
