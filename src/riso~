@@ -504,16 +504,17 @@ baixa_rec() {
 #Checklist de seleção.
 menu_instala_imagens() {
 
-        opcao="$(zenity --width=400 --height=400 --list --column "Instalar imagens" --title="Quais imagens deseja instalar:" \
-                "Windows"          \
-                "Linux"            \ 
-                "Windows e Linux"  )"
+        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja instalar?" \
+                --title="Instalar imagens" \
+                "Windows" \
+                "Linux" \
+              "Windows + Linux"\ )"
 
         # De acordo com a opção escolhida, executa funcoes
         case $opcao in
                 "Windows") instala_windows;;
                 "Linux") instala_linux;;
-                "Windows e Linux") instala;;
+                "Windows + Linux") instala;;
         esac
 
 }
@@ -521,18 +522,17 @@ menu_instala_imagens() {
 #Checklist de seleção.
 menu_baixa_imagens() {
 
-	opcao=$( dialog --stdout \
-	--ok-label 'Confirmar'   \
-	--checklist 'Quais imagens deseja baixar:' \
-	0 0 0 \
-	Windows '' ON  \
-	Linux '' ON )
+        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja baixar?" \
+                --title="Baixar imagens" \
+                "Windows" \
+                "Linux" \
+              "Windows + Linux"\ )"
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
-		'"Windows"') baixa_imagem_windows && instala_windows;;
-		'"Linux"') baixa_imagem_linux && instala_linux;;
-		'"Windows" "Linux"') baixa_imagens && instala;;
+		"Windows") baixa_imagem_windows && instala_windows;;
+		"Linux") baixa_imagem_linux && instala_linux;;
+		"Windows + Linux") baixa_imagens && instala;;
 	esac
 	
 }
@@ -543,11 +543,12 @@ menu() {
         opcao="$(zenity --width=400 --height=400 --list --column "RISO - 0.5" \
                 --title="Menu" \
               "Instalar imagens ja existentes"   \
-               "Baixar e instalar novas imagens"  \                "Baixar e instalar imagem de recuperação(LIVE_CD)"\
+               "Baixar e instalar novas imagens"  \
+"Baixar e instalar imagem de recuperação(LIVE_CD)"\
                      "Atualiza"                  \
                      "Configurações"             \
                      "Creditos"                   \
-                        "Help"                    \ )"
+                      "Help"                    \ )"
 
                 # ESC, sai do programa...
                 [ $? -ne 0 ] && break
