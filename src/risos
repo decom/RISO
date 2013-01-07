@@ -885,18 +885,17 @@ iso (){
 #Checklist de seleção.
 menu_inicia_servidor() {
 
-	opcao=$( dialog --stdout \
-	--ok-label 'Confirmar'   \
-	--checklist 'Quais imagens deseja disponibilizar para o download na rede:' \
-	0 0 0 \
-	Windows '' ON  \
-	Linux '' ON )
+        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja disponibilizar para o download?" \
+                --title="Iniciar servidor" \
+                "Windows" \
+                "Linux" \
+              "Windows e Linux"\ )"
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
-		'"Windows"') inicia_servidor_windows;;
-		'"Linux"') inicia_servidor_linux;;
-		'"Windows" "Linux"') inicia_servidor;;
+		"Windows") inicia_servidor_windows;;
+		"Linux") inicia_servidor_linux;;
+		"Windows e Linux") inicia_servidor;;
 	esac
 	
 }
@@ -911,6 +910,7 @@ menu_criar_imagens() {
 	Windows '' ON  \
 	Linux '' ON  \
 	Recuperacao '' off )
+
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
@@ -928,58 +928,52 @@ menu_criar_imagens() {
 #Checklist de seleção.
 menu_criar_torrents() {
 
-	opcao=$( dialog --stdout \
-	--ok-label 'Confirmar'   \
-	--checklist 'Quais torrents deseja criar:' \
-	0 0 0 \
-	Windows '' ON  \
-	Linux '' ON  )
+        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja disponibilizar para o download?" \
+                --title="Iniciar servidor" \
+                "Windows" \
+                "Linux" \
+              "Windows e Linux"\ )"
 
     # De acordo com a opção escolhida, executa funcoes
 	case $opcao in
-		'"Windows"') cria_torrent_windows && torrent_windows_criado;;
-		'"Linux"') cria_torrent_linux && torrent_linux_criado;;
-		'"Windows" "Linux"') cria_torrent_windows && cria_torrent_linux && torrents_criados;;
+		"Windows") cria_torrent_windows && torrent_windows_criado;;
+		"Linux") cria_torrent_linux && torrent_linux_criado;;
+		"Windows e Linux") cria_torrent_windows && cria_torrent_linux && torrents_criados;;
 	esac
 	
 }
 
 #Menu pricipal.
 menu() {
+        while : ; do
+        opcao="$(zenity --width=400 --height=400 --list --column "RISO - 0.5" \
+                --title="Menu" \
+              "Iniciar servidor"   \
+               "Criar imagens"  \
+		"Criar torrents"\
+                     "Criar live-cd"                  \
+                     "Atualiza"             \
+                     "Creditos"                   \
+                      "Help"                    \ )"
 
-	while : ; do
-	opcao=$(
-		dialog --stdout                         \
-		--ok-label 'Confirmar'                  \
-		--cancel-label 'Sair'                   \
-		--title 'RISOS - 0.5'                   \
-		--menu 'Escolha o que voce quer fazer:' \
-			0 0 0                               \
-			1 'Iniciar servidor'                \
-			2 'Criar imagens'                   \
-			3 'Criar torrents'                  \
-			4 'Criar live-cd'                   \
-			5 'Atualiza'                        \
-			6 'Creditos'                        \
-			7 'Help'                            )
-	
-		# ESC, sai do programa...
-		[ $? -ne 0 ] && break
-	
-		# De acordo com a opção escolhida, executa funçao
-		case $opcao in
-			1) menu_inicia_servidor;;
-			2) menu_criar_imagens;;
-			3) menu_criar_torrents;;
-			4) livecd "backup";;
-			5) atualiza;;
-			6) creditos;;
-			7) helpi;;
-		esac	
+                # ESC, sai do programa...
+                [ $? -ne 0 ] && break
 
-	done
-	
+                # De acordo com a opção escolhida, executa funçao
+                case $opcao in
+    		 "Iniciar servidor") menu_inicia_servidor;;
+		 "Criar imagens") menu_criar_imagens;;
+		 "Criar torrents") menu_criar_torrents;;
+		 "Criar live-cd") livecd "backup";;
+		 "Atualiza") atualiza;;
+		 "Creditos") creditos;;
+		 "Help") helpi;;
+        esac
+
+        done
+
 }
+
 
 #Verifica se usuário é root antes de iniciar o risos.
 USER=`id -u`

@@ -252,58 +252,6 @@ cria_rec() {
 	
 }
 
-#Atualiza riso.
-atualiza() {
-
-	log "Iniciando atualização do script."
-	log "Verificando disponibilidade do servidor de atualização."
-	ping -q -c 1 200.131.37.236 > /dev/null 2>&1
-	if [ "$?" -eq "0" ]; then
-		log "Iniciando download do script novo."
-		(wget 200.131.37.236/riso/risos0.5 -O /usr/riso/risos && log "RISO atualizado com sucesso.") || log "ERRO: Não foi possível baixar o novo script."
-		
-		#Menssagem de atualizado com sucesso.
-		dialog \
-	        --ok-label 'OK' \
-        	--title 'Atenção' \
-        	--msgbox '\n   RISOS atualizado com sucesso.\n' \
-		    7 39
-		
-		bash /usr/riso/risos
-		exit
-	else
-		dialog \
-		--ok-label 'OK' \
-		--title 'ERRO' \
-		--msgbox '\n   Esta versão já é a mais recente.'\
-		7 40
-		log "ERRO: RISO já é a versão mais nova."
-	fi
-	
-}
-
-#Pessoas que desenvolveram esse material.
-creditos() {
-
-	dialog \
-	--ok-label 'OK' \
-	--title 'Creditos' \
-	--msgbox '                                       \n
-		 CENTRO FEDERAL DE EDUCAÇAO TECNOLOGICA  \n
-		        Engenharia da Computaçao         \n
-		                                         \n
-		      Cristiano Goulart Lopes Dias       \n
-		    Vinicius Tinti de Paula Oliveira     \n
-		       Germano Teixeira de Miranda       \n
-		        Gabriel de Souza Brandao         \n
-		         Marcio J. Menezes Jr.           \n
-		    Gabriel Machado de Castro Fonseca    \n
-		      André Luiz Silveira Herculano      \n
-		                                         \n
-		           www.dgo.cefetmg.br            \n
-		                                         \n'\
-		  0 0
-}
 
 #Notificação para imagem criada com sucesso
 linux_criado() {
@@ -373,18 +321,6 @@ torrents_criados() {
 	--title 'Atenção' \
 	--msgbox '\nTorrents do Windows e Linux criados com sucesso.\n' \
 		8 0
-}
-
-#Acredite isso é um help.
-helpi() {
-
-	dialog \
-	--ok-label 'OK' \
-	--title 'Help' \
-	--msgbox 'Envie um e-mail com suas duvidas e sugestões \n
-para: "germano@comp.eng.br" e responderei o\n
-mais rápido possível.' \
-		0 0
 }
 
 #Cria um livecd do SO com o R.I.S.O instalado.
@@ -949,18 +885,17 @@ iso (){
 #Checklist de seleção.
 menu_inicia_servidor() {
 
-	opcao=$( dialog --stdout \
-	--ok-label 'Confirmar'   \
-	--checklist 'Quais imagens deseja disponibilizar para o download na rede:' \
-	0 0 0 \
-	Windows '' ON  \
-	Linux '' ON )
+        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja disponibilizar para o download?" \
+                --title="Iniciar servidor" \
+                "Windows" \
+                "Linux" \
+              "Windows e Linux"\ )"
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
-		'"Windows"') inicia_servidor_windows;;
-		'"Linux"') inicia_servidor_linux;;
-		'"Windows" "Linux"') inicia_servidor;;
+		"Windows") inicia_servidor_windows;;
+		"Linux") inicia_servidor_linux;;
+		"Windows e Linux") inicia_servidor;;
 	esac
 	
 }
@@ -975,6 +910,7 @@ menu_criar_imagens() {
 	Windows '' ON  \
 	Linux '' ON  \
 	Recuperacao '' off )
+
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
@@ -1010,40 +946,35 @@ menu_criar_torrents() {
 
 #Menu pricipal.
 menu() {
+        while : ; do
+        opcao="$(zenity --width=400 --height=400 --list --column "RISO - 0.5" \
+                --title="Menu" \
+              "Iniciar servidor"   \
+               "Criar imagens"  \
+		"Criar torrents"\
+                     "Criar live-cd"                  \
+                     "Atualiza"             \
+                     "Creditos"                   \
+                      "Help"                    \ )"
 
-	while : ; do
-	opcao=$(
-		dialog --stdout                         \
-		--ok-label 'Confirmar'                  \
-		--cancel-label 'Sair'                   \
-		--title 'RISOS - 0.5'                   \
-		--menu 'Escolha o que voce quer fazer:' \
-			0 0 0                               \
-			1 'Iniciar servidor'                \
-			2 'Criar imagens'                   \
-			3 'Criar torrents'                  \
-			4 'Criar live-cd'                   \
-			5 'Atualiza'                        \
-			6 'Creditos'                        \
-			7 'Help'                            )
-	
-		# ESC, sai do programa...
-		[ $? -ne 0 ] && break
-	
-		# De acordo com a opção escolhida, executa funçao
-		case $opcao in
-			1) menu_inicia_servidor;;
-			2) menu_criar_imagens;;
-			3) menu_criar_torrents;;
-			4) livecd "backup";;
-			5) atualiza;;
-			6) creditos;;
-			7) helpi;;
-		esac	
+                # ESC, sai do programa...
+                [ $? -ne 0 ] && break
 
-	done
-	
+                # De acordo com a opção escolhida, executa funçao
+                case $opcao in
+    		 "Iniciar servidor") menu_inicia_servidor;;
+		 "Criar imagens") menu_criar_imagens;;
+		 "Criar torrents") menu_criar_torrents;;
+		 "Criar live-cd") livecd "backup";;
+		 "Atualiza") atualiza;;
+		 "Creditos") creditos;;
+		 "Help") helpi;;
+        esac
+
+        done
+
 }
+
 
 #Verifica se usuário é root antes de iniciar o risos.
 USER=`id -u`
