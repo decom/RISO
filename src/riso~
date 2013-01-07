@@ -508,13 +508,13 @@ menu_instala_imagens() {
                 --title="Instalar imagens" \
                 "Windows" \
                 "Linux" \
-              "Windows + Linux"\ )"
+              "Windows e Linux"\ )"
 
         # De acordo com a opção escolhida, executa funcoes
         case $opcao in
                 "Windows") instala_windows;;
                 "Linux") instala_linux;;
-                "Windows + Linux") instala;;
+                "Windows e Linux") instala;;
         esac
 
 }
@@ -526,13 +526,13 @@ menu_baixa_imagens() {
                 --title="Baixar imagens" \
                 "Windows" \
                 "Linux" \
-              "Windows + Linux"\ )"
+              "Windows e Linux"\ )"
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
 		"Windows") baixa_imagem_windows && instala_windows;;
 		"Linux") baixa_imagem_linux && instala_linux;;
-		"Windows + Linux") baixa_imagens && instala;;
+		"Windows e Linux") baixa_imagens && instala;;
 	esac
 	
 }

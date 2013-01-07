@@ -6,38 +6,37 @@
 
 #Help, i need somebody, HELP!
 helpi() {
-	dialog \
-	--ok-label 'OK' \
-	--title 'Help' \
-	--msgbox '                                       \n
-		Envie um e-mail com suas duvidas e sugestões \n
-		para: "riso@comp.eng.br" e reponderei o   \n
-		mais rápido possível.'                    \
-		0 0
+        zenity \
+        --info \
+        --title 'Help' \
+        --text='                                       \n
+                Envie um e-mail com suas duvidas e sugestões \n
+                para: "riso@comp.eng.br" e reponderei o   \n
+                mais rápido possível.'
 }
 
 #Pessoas que fizeram acontecer
 creditos() {
 
-	dialog \
-	--ok-label 'OK' \
-	--title 'Creditos' \
-	--msgbox '                                       \n
-		 CENTRO FEDERAL DE EDUCAÇAO TECNOLOGICA  \n
-		        Engenharia da Computaçao         \n
-		                                         \n
-		      Cristiano Goulart Lopes Dias       \n
-		    Vinicius Tinti de Paula Oliveira     \n
-		       Germano Teixeira de Miranda       \n
-		        Gabriel de Souza Brandao         \n
-		         Marcio J. Menezes Jr.           \n
-		    Gabriel Machado de Castro Fonseca    \n
-		      André Luiz Silveira Herculano      \n
-		                                         \n
-		           www.dgo.cefetmg.br            \n
-		                                         \n'\
-		  0 0
-		  
+        zenity \
+        --info \
+        --title 'Creditos' \
+        --text='                                       \n
+                 CENTRO FEDERAL DE EDUCAÇAO TECNOLOGICA  \n
+                        Engenharia da Computaçao         \n
+                                                         \n
+                      Cristiano Goulart Lopes Dias       \n
+                    Vinicius Tinti de Paula Oliveira     \n
+                       Germano Teixeira de Miranda       \n
+                        Gabriel de Souza Brandao         \n
+                         Marcio J. Menezes Jr.           \n
+                    Gabriel Machado de Castro Fonseca    \n
+                      André Luiz Silveira Herculano      \n
+                                                         \n
+                           www.dgo.cefetmg.br            \n
+                                                         \n'\
+
+
 }
 
 #Atualiza R.I.S.O.
@@ -70,11 +69,10 @@ atualiza() {
 
 #Define configurações do riso
 configuracoes() {
-    dialog                                          \
-    --title 'AVISO'                              \
-    --yesno '\nAlterar esse arquivo é potencialmente
-             perigoso, se não souber o que esta fazendo pare agora.\n\nDeseja continuar?'    \
-    0 0
+
+    zenity --title="AVISO" --question --text="Alterar esse arquivo é potencialmente perigoso, se não souber o 
+  que esta fazendo pare agora.\nDeseja continuar?"
+
     if [ "$?" -eq "0" ]; then
 		log "Iniciando configuração manual do arquivo de configuração."
 		nano $riso_conf

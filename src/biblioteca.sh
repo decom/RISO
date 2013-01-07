@@ -69,11 +69,10 @@ atualiza() {
 
 #Define configurações do riso
 configuracoes() {
-    dialog                                          \
-    --title 'AVISO'                              \
-    --yesno '\nAlterar esse arquivo é potencialmente
-             perigoso, se não souber o que esta fazendo pare agora.\n\nDeseja continuar?'    \
-    0 0
+
+    zenity --title="AVISO" --question --text="Alterar esse arquivo é potencialmente perigoso, se não souber o 
+que esta fazendo pare agora.\nDeseja continuar?"
+
     if [ "$?" -eq "0" ]; then
 		log "Iniciando configuração manual do arquivo de configuração."
 		nano $riso_conf

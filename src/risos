@@ -885,60 +885,47 @@ iso (){
 #Checklist de seleção.
 menu_inicia_servidor() {
 
-        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja disponibilizar para o download?" \
-                --title="Iniciar servidor" \
-                "Windows" \
-                "Linux" \
-              "Windows e Linux"\ )"
+	opcao=$(zenity --width=400 --height=400 --text="Quais imagens deseja disponibilizar?" --list --checklist --column " " --column "Opcoes" TRUE Windows TRUE Linux)
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
 		"Windows") inicia_servidor_windows;;
 		"Linux") inicia_servidor_linux;;
-		"Windows e Linux") inicia_servidor;;
+		"Windows|Linux") inicia_servidor;;
 	esac
 	
 }
 
 #Checklist de seleção.
-menu_criar_imagens() {
+ menu_criar_imagens() {
 
-	opcao=$( dialog --stdout \
-	--ok-label 'Confirmar'   \
-	--checklist 'Quais imagens deseja criar:' \
-	0 0 0 \
-	Windows '' ON  \
-	Linux '' ON  \
-	Recuperacao '' off )
+    opcao=$(zenity --text="Quais imagens deseja criar:" --list --checklist --column "Sel" --column "Opcoes" TRUE Linux TRUE Windows FALSE Recuperacao )
 
 
-	# De acordo com a opção escolhida, executa funcoes
-	case $opcao in
-		'"Windows"') cria_windows && cria_torrent_windows && windows_criado;;
-		'"Linux"') cria_linux && cria_torrent_linux && linux_criado;;
-		'"Recuperacao"') cria_rec && rec_criado;;
-		'"Windows" "Linux"') cria_windows && cria_torrent_windows && cria_linux && cria_torrent_linux && imagens_criadas;;
-		'"Windows" "Recuperacao"') cria_rec && cria_windows && cria_torrent_windows && imagens_criadas;;
-		'"Linux" "Recuperacao"') cria_rec && cria_linux && cria_torrent_linux && imagens_criadas;;
-		'"Windows" "Linux" "Recuperacao"') cria_rec && cria_windows && cria_torrent_windows && cria_linux && cria_torrent_linux && imagens_criadas;;
-	esac
-	
-}
+    # De acordo com a opção escolhida, executa funcoes
+    case $opcao in
+        "Windows") cria_windows && cria_torrent_windows && windows_criado;;
+        "Linux") cria_linux && cria_torrent_linux && linux_criado;;
+        "Recuperacao") cria_rec && rec_criado;;
+        "Linux|Windows") cria_windows && cria_torrent_windows && cria_linux && cria_torrent_linux && imagens_criadas;;
+        "Windows|Recuperacao") cria_rec && cria_windows && cria_torrent_windows && imagens_criadas;;
+        "Linux|Recuperacao") cria_rec && cria_linux && cria_torrent_linux && imagens_criadas;;
+        "Linux|Windows|Recuperacao") cria_rec && cria_windows && cria_torrent_windows && cria_linux && cria_torrent_linux && imagens_criadas;;
+    esac
+    
+} 
 
 #Checklist de seleção.
 menu_criar_torrents() {
 
-        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja disponibilizar para o download?" \
-                --title="Iniciar servidor" \
-                "Windows" \
-                "Linux" \
-              "Windows e Linux"\ )"
+    opcao=$(zenity --width=400 --height=400 --text="Quais imagens deseja disponibilizar?" --list --checklist --column " " --column "Opcoes" TRUE Windows TRUE Linux)
+
 
     # De acordo com a opção escolhida, executa funcoes
 	case $opcao in
 		"Windows") cria_torrent_windows && torrent_windows_criado;;
 		"Linux") cria_torrent_linux && torrent_linux_criado;;
-		"Windows e Linux") cria_torrent_windows && cria_torrent_linux && torrents_criados;;
+		"Windows|Linux") cria_torrent_windows && cria_torrent_linux && torrents_criados;;
 	esac
 	
 }
