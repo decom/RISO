@@ -71,7 +71,7 @@ atualiza() {
 configuracoes() {
 
     zenity --title="AVISO" --question --text="Alterar esse arquivo é potencialmente perigoso, se não souber o 
-  que esta fazendo pare agora.\nDeseja continuar?"
+que esta fazendo pare agora.\nDeseja continuar?"
 
     if [ "$?" -eq "0" ]; then
 		log "Iniciando configuração manual do arquivo de configuração."

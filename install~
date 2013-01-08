@@ -9,20 +9,16 @@ dep_ser="avahi-utils avahi-daemon bittorrent rtorrent screen ntfsprogs grub2 ssh
 
 menu() {
     apt-get install -y dialog
-	opcao=$( dialog --stdout \
-	--title	'Instalação do RISO' \
-	--ok-label 'Confirmar'   \
-	--checklist 'Deseja instalar:' \
-	0 0 0 \
-	RISOS '' ON  \
-	RISO '' ON )
-
+            opcao=$(zenity --width=400 --height=400 --text="Instalação do RISO" --list --checklist --column " " --column "Opcoes" TRUE RISOS TRUE RISO)
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
-		'"RISOS"') instala_risos;;
-		'"RISO"') instala_riso;;
-		'"RISOS" "RISO"') instala_riso; instala_risos;;
+		"RISOS") instala_risos;;
+		"RISO") instala_riso;;
+		"RISOS|RISO") instala_riso; instala_risos;;
 	esac
+
+
+
 }
 
 instala_riso() {
@@ -41,7 +37,7 @@ instala_riso() {
     chmod +x /usr/bin/riso
     
     echo "Movendo script..."
-    cp ./src/biblioteca.sh /usr/riso/bilioteca.sh
+    cp ./src/biblioteca.sh /usr/riso/biblioteca.sh
     cp ./src/riso /usr/riso/riso
     chmod +x /usr/riso/riso
     cp ./conf/riso.conf /usr/riso/riso.conf
@@ -74,7 +70,7 @@ instala_risos() {
     chmod +x /usr/bin/risos
     
     echo "Movendo script..."
-    cp ./src/biblioteca.sh /usr/riso/bilioteca.sh
+    cp ./src/biblioteca.sh /usr/riso/biblioteca.sh
     cp ./src/risos /usr/riso/risos
     chmod +x /usr/riso/risos
     

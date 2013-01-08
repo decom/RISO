@@ -49,20 +49,15 @@ atualiza() {
 		(wget 200.131.37.236/riso/riso0.5 -O /usr/riso/riso && log "RISO atualizado com sucesso.") || log "ERRO: Não foi possível baixar o novo script."
 		
 		#Menssagem de atualizado com sucesso.
-		dialog \
-	        --ok-label 'OK' \
-        	--title 'Atenção' \
-        	--msgbox '\n  Programa atualizado com sucesso.\n' \
-		    7 39
+        	zenity --title="Atenção" \
+       	        --warning --text="\n  Programa atualizado com sucesso.\n" \
 		
 		bash /usr/riso/riso
 		exit
 	else
-		dialog \
-		--ok-label 'OK' \
-		--title 'ERRO' \
-		--msgbox '\n   Esta versão já é a mais recente'\
-		7 40
+        	zenity --title="Atenção" \
+       	        --warning --text="Esta versão já é a mais recente"\
+
 		log "ERRO: Esta já é a versão mais nova."
 	fi
 }

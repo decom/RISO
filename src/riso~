@@ -504,17 +504,13 @@ baixa_rec() {
 #Checklist de seleção.
 menu_instala_imagens() {
 
-        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja instalar?" \
-                --title="Instalar imagens" \
-                "Windows" \
-                "Linux" \
-              "Windows e Linux"\ )"
+            opcao=$(zenity --width=400 --height=400 --text="Quais imagens deseja instalar?" --list --checklist --column " " --column "Opcoes" TRUE Windows TRUE Linux)
 
         # De acordo com a opção escolhida, executa funcoes
         case $opcao in
                 "Windows") instala_windows;;
                 "Linux") instala_linux;;
-                "Windows e Linux") instala;;
+                "Windows|Linux") instala;;
         esac
 
 }
@@ -522,17 +518,13 @@ menu_instala_imagens() {
 #Checklist de seleção.
 menu_baixa_imagens() {
 
-        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja baixar?" \
-                --title="Baixar imagens" \
-                "Windows" \
-                "Linux" \
-              "Windows e Linux"\ )"
+       opcao=$(zenity --width=400 --height=400 --text="Quais imagens deseja baixar?" --list --checklist --column " " --column "Opcoes" TRUE Windows TRUE Linux)
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
 		"Windows") baixa_imagem_windows && instala_windows;;
 		"Linux") baixa_imagem_linux && instala_linux;;
-		"Windows e Linux") baixa_imagens && instala;;
+		"Windows|Linux") baixa_imagens && instala;;
 	esac
 	
 }

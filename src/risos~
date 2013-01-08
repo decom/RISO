@@ -30,11 +30,9 @@ carrega_variaveis() {
     avahi_saida=`avahi-browse -rtp _RISO._tcp | grep '='`
     servidor=`cut -d ';' -f8 <<< ${avahi_saida}` #ip do servidor.
     if [ -z $servidor ]; then
-        dialog \
-        --title 'Atencao' \
-        --ok-label 'OK' \
-        --msgbox 'O servidor RISOS precisa estar conectado à rede.\nVerifique a conexão e tente novamente.' \
-        7 45
+        zenity --title="Atenção" \
+        --warning --text="O servidor RISOS precisa estar conectado à rede.\nVerifique a conexão e tente novamente."
+        
         log "ERRO: Servidor não encontrado na rede."
         exit 1
     fi
@@ -885,17 +883,13 @@ iso (){
 #Checklist de seleção.
 menu_inicia_servidor() {
 
-        opcao="$(zenity --width=400 --height=400 --list --column "Quais imagens deseja disponibilizar para o download?" \
-                --title="Iniciar servidor" \
-                "Windows" \
-                "Linux" \
-              "Windows e Linux"\ )"
+	opcao=$(zenity --width=400 --height=400 --text="Quais imagens deseja disponibilizar?" --list --checklist --column " " --column "Opcoes" TRUE Windows TRUE Linux)
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
 		"Windows") inicia_servidor_windows;;
 		"Linux") inicia_servidor_linux;;
-		"Windows e Linux") inicia_servidor;;
+		"Windows|Linux") inicia_servidor;;
 	esac
 	
 }
@@ -922,7 +916,7 @@ menu_inicia_servidor() {
 #Checklist de seleção.
 menu_criar_torrents() {
 
-    opcao=$(zenity --width=400 --height=400 --text="Quais imagens deseja disponibilizar para o download?" --list --checklist --column " " --column "Opcoes" TRUE Windows TRUE Linux)
+    opcao=$(zenity --width=400 --height=400 --text="Quais imagens deseja disponibilizar?" --list --checklist --column " " --column "Opcoes" TRUE Windows TRUE Linux)
 
 
     # De acordo com a opção escolhida, executa funcoes

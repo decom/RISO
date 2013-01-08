@@ -30,11 +30,9 @@ carrega_variaveis() {
     avahi_saida=`avahi-browse -rtp _RISO._tcp | grep '='`
     servidor=`cut -d ';' -f8 <<< ${avahi_saida}` #ip do servidor.
     if [ -z $servidor ]; then
-        dialog \
-        --title 'Atencao' \
-        --ok-label 'OK' \
-        --msgbox 'O servidor RISOS precisa estar conectado à rede.\nVerifique a conexão e tente novamente.' \
-        7 45
+        zenity --title="Atenção" \
+        --warning --text="O servidor RISOS precisa estar conectado à rede.\nVerifique a conexão e tente novamente."
+        
         log "ERRO: Servidor não encontrado na rede."
         exit 1
     fi
@@ -69,11 +67,9 @@ inicia_servidor() {
 		rtorrent ${tor_lin} ${tor_win}
 		log "Tracker finalizado para Windows e Linux."
 	else
-		dialog \
-		--title 'Atenção' \
-		--ok-label 'OK' \
-		--msgbox '\n   Não existem imagens prontas.' \
-		7 40
+ 	        zenity --title="Atenção" \
+                --warning --text="Não existem imagens prontas."
+		
 		log "ERRO: Ao iniciar tracker para Windows e Linux, Não existem imagens prontas."
 		return 2
 	fi
@@ -90,11 +86,9 @@ inicia_servidor_windows() {
 		rtorrent ${tor_win}
 		log "Tracker finalizado para Windows."
 	else
-		dialog \
-		--title 'Atenção' \
-		--ok-label 'OK' \
-		--msgbox '\nVocê ainda não criou a imagem do windows.' \
-		7 45
+	        zenity --title="Atenção" \
+                --warning --text="Você ainda não criou a imagem do windows!"
+
 		log "ERRO: Ao iniciar tracker para Windows, Não existe imagem pronta."
 		return 2
 	fi
@@ -111,11 +105,9 @@ inicia_servidor_linux() {
 		rtorrent ${tor_lin}
 		log "Tracker finalizado para Linux."
 	else
-		dialog \
-		--title 'Atenção' \
-		--ok-label 'OK' \
-		--msgbox '\nVocê ainda não criou a imagem do linux.' \
-		7 44
+	        zenity --title="Atenção" \
+                --warning --text="Você ainda não criou a imagem do Linux!"
+
 		log "ERRO: Ao iniciar tracker para o Linux, Não existe imagem pronta."
 		return 2
 	fi
@@ -159,13 +151,11 @@ cria_torrent_linux() {
 	    mv ${riso_service}.tmp ${riso_service}
 	    log "Arquivo torrent do Linux criado."
 	else
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\nVocê ainda não criou a imagem do Linux.' \
-        7 44
-        log "ERRO: Ao criar arquivo torrent do Linux, não existe imagem pronta."
-        return 2
+  	    zenity --title="Atenção" \
+            --warning --text="Você ainda não criou a imagem do Linux!"
+        
+	    log "ERRO: Ao criar arquivo torrent do Linux, não existe imagem pronta."
+            return 2
 	fi
 	
 }
@@ -184,15 +174,13 @@ cria_windows() {
     
     #Se não conseguiu criar a imagem
     if [ "$?" -ne "0" ]; then
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox 'Não consegui criar uma imagem do Windows.\n
+        zenity --title="Atenção" \
+        --warning --text="Não consegui criar uma imagem do Windows.\n
 O sistema operacional pode ainda não ter sido instalado.\n
 A partição ou o sistema de arquivo indicados pelas variáveis\n
 partwindows e sa_partwindows em /etc/avahi/services/riso.service\n
-pode estar incorreta.\n' \
-        0 0
+pode estar incorreta.\n" \
+       
         log "ERRO: Ao criar imagem do Windows, ntfsclone falhou ao criar arquivo windows.img."
         return 3
     fi
@@ -217,13 +205,11 @@ cria_torrent_windows() {
 	    mv ${riso_service}.tmp ${riso_service}
 	    log "Arquivo torrent do windows criado."
     else
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\nVocê ainda não criou a imagem do windows.' \
-        7 45
-        log "ERRO: Ao criar torrent do windows, não existe imagem pronta."
-        return 2
+  	    zenity --title="Atenção" \
+            --warning --text="Você ainda não criou a imagem do Windows!"
+       
+	    log "ERRO: Ao criar torrent do Windows, não existe imagem pronta."
+            return 2
     fi
 }
 
@@ -256,71 +242,50 @@ cria_rec() {
 #Notificação para imagem criada com sucesso
 linux_criado() {
 
-	dialog \
-	--ok-label 'OK' \
-	--title 'Atenção' \
-	--msgbox '\nImagem do Linux criada com sucesso.\n' \
-		7 40
+  	    zenity --title="Atenção" \
+            --warning --text="Imagem do Linux criada com sucesso!"
 }
 
 #Notificação para imagem criada com sucesso
 windows_criado() {
 
-	dialog \
-	--ok-label 'OK' \
-	--title 'Atenção' \
-	--msgbox '\n Imagem do Windows criada com sucesso.\n' \
-		7 43
+  	    zenity --title="Atenção" \
+            --warning --text="Imagem do Windows criada com sucesso!"
 }
 
 #Notificação para imagem criada com sucesso
 rec_criado() {
 
-	dialog \
-	--ok-label 'OK' \
-	--title 'Atenção' \
-	--msgbox '\n Imagem de Recuperação criada com sucesso.\n' \
-		7 47
+  	    zenity --title="Atenção" \
+            --warning --text="Imagem de recuperação criada com sucesso!"
 }
 
 #Notificação para imagens criadas com sucesso
 imagens_criadas() {
 
-	dialog \
-	--ok-label 'OK' \
-	--title 'Atenção' \
-	--msgbox '\n  Imagens criadas com sucesso.\n' \
-		7 37
+  	    zenity --title="Atenção" \
+            --warning --text="Imagens criadas com sucesso!"
 }
 
 #Notificação para torrent criado com sucesso
 torrent_linux_criado() {
 
-	dialog \
-	--ok-label 'OK' \
-	--title 'Atenção' \
-	--msgbox '\n  Torrent Linux criado com sucesso.\n' \
-		7 42
+	     zenity --title="Atenção" \
+            --warning --text="Torrent do Linux criado com sucesso!"
 }
 
 #Notificação para torrent criado com sucesso
 torrent_windows_criado() {
 
-    dialog \
-	--ok-label 'OK' \
-	--title 'Atenção' \
-	--msgbox '\n  Torrent Windows criado com sucesso.\n' \
-		7 43
+	     zenity --title="Atenção" \
+            --warning --text="Torrent do Windows criado com sucesso!"
 }
 
 #Notificação para torrent criado com sucesso
 torrents_criados() {
 
-    dialog \
-	--ok-label 'OK' \
-	--title 'Atenção' \
-	--msgbox '\nTorrents do Windows e Linux criados com sucesso.\n' \
-		8 0
+ 	     zenity --title="Atenção" \
+            --warning --text="Torrent do Windows e Linux criados com sucesso!"
 }
 
 #Cria um livecd do SO com o R.I.S.O instalado.
@@ -349,15 +314,13 @@ livecd() {
     mv /etc/rc.local.tmp /etc/rc.local
     chmod +x /etc/rc.local
     
-    dialog \
-	--ok-label 'OK' \
-	--title 'Atenção' \
-    --msgbox 'Arquivo de imagem criado com sucesso em:\n
+    zenity --title="Atenção" \
+    --warning --text="Arquivo de imagem criado com sucesso em:\n
 /home/remastersys/riso0.5.iso.\n\n
 Para garava-lo em um CD/DVD tente:\n
 cdrecord -v -fs=16M speed=32 dev=1,0,0 -data /home/remastersys/riso0.5.iso\n\n
-Identifique seu dev com: cdrecore -scanbus' \
-    0 0
+Identifique seu dev com: cdrecore -scanbus" \
+  
     log "Live-cd do riso criado."
 }
 
