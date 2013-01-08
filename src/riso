@@ -271,7 +271,7 @@ baixa_imagens() {
 		    # qual a porcentagem do total?
 		    PORCENTAGEM=$((copiado*100/total))
 		
-		    # envia a porcentagem para o dialog
+		    # envia a porcentagem para o zenity
 		    echo $PORCENTAGEM
 		
 		    # aguarda até a próxima checagem
@@ -283,7 +283,7 @@ baixa_imagens() {
 	    log "Download das imagens do Windows e Linux finalizado."
 	    sleep 30
 	
-    ) | dialog --title "Baixando imagens..." --gauge "Baixando imagens do Windows e Linux do servidor RISOS para maquina local" 8 50 0
+    ) | zenity --progress --title="Baixando imagens..." --text="Baixando imagens do Windows e Linux do servidor RISOS para maquina local" --auto-close
 
 	log "Finalizando rtorrent."
 	#Finaliza download
@@ -338,7 +338,7 @@ baixa_imagem_windows() {
 		    # qual a porcentagem do total?
 		    PORCENTAGEM=$((sizelocwin*100/tamwindows))
 		
-		    # envia a porcentagem para o dialog
+		    # envia a porcentagem para o zenity
 		    echo $PORCENTAGEM
 		
 		    # aguarda até a próxima checagem
@@ -350,7 +350,7 @@ baixa_imagem_windows() {
 	    log "Download do Windows finalizado."
 	    sleep 30
 	
-    ) | dialog --title "Baixando imagem..." --gauge "Baixando imagem do Windows do servidor RISOS para maquina local" 8 50 0
+    ) | zenity --progress --title="Baixando imagem..." --text="Baixando imagem do Windows do servidor RISOS para a maquina local" --auto-close 
 
 	log "Finalizando rtorrent."
 	#Finaliza download
@@ -406,7 +406,7 @@ baixa_imagem_linux() {
 		    # qual a porcentagem do total?
 		    PORCENTAGEM=$((sizeloclin*100/tamlinux))
 		
-		    # envia a porcentagem para o dialog
+		    # envia a porcentagem para o zenity
 		    echo $PORCENTAGEM
 		
 		    # aguarda até a próxima checagem
@@ -417,7 +417,7 @@ baixa_imagem_linux() {
 	    echo 100
 	    log "Download do Linux finalizado."
 	    sleep 30
-    ) | dialog --title "Baixando imagem..." --gauge "Baixando imagem do Linux do servidor RISOS para maquina local" 8 50 0
+    ) | zenity --progress --title="Baixando imagem..." --text="Baixando imagem do Linux do servidor RISOS para a maquina local" --auto-close
 
 	log "Finalizando rtorrent"
 	#Finaliza download

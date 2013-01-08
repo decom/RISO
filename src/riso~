@@ -30,11 +30,9 @@ carrega_variaveis() {
     avahi_saida=`avahi-browse -rtp _RISO._tcp | grep '='`
     servidor=`cut -d ';' -f8 <<< ${avahi_saida}` #ip do servidor.
     if [ -z $servidor ]; then
-        dialog \
-        --title 'Atencao' \
-        --ok-label 'OK' \
-        --msgbox 'Não existe nenhum servidor RISOS ativo na rede.\nVerifique a conexão e tente novamente.' \
-        0 0
+        zenity --title="Atenção" \
+        --warning --text="Não existe nenhum servidor RISOS ativo na rede.\nVerifique a conexão e tente novamente." \
+       
 	    log "ERRO: Servidor não encontrado na rede."
         exit 1
     fi
@@ -105,11 +103,9 @@ instala() {
 	        reboot
 	    fi
 	else
-		dialog \
-		--title 'Atenção' \
-		--ok-label 'OK' \
-		--msgbox '\n   Não existem imagens prontas.' \
-		7 40
+       		 zenity --title="Atenção" \
+        	--warning --text="Não existem imagens prontas."
+
 		log "ERRO: Não existem imagens prontas."
 		return 5
 	fi    
@@ -148,11 +144,9 @@ instala_windows() {
 	        reboot
 	    fi
 	else
-		dialog \
-		--title 'Atenção' \
-		--ok-label 'OK' \
-		--msgbox '\n  Você ainda não baixou a imagem do windows.' \
-		7 50
+       		 zenity --title="Atenção" \
+       		 --warning --text="Você ainda não baixou a imagem do Windows"
+
 		log "ERRO: Imagem do Windows ainda não foi baixada."
 		return 5
 	fi
@@ -198,11 +192,9 @@ instala_linux() {
 	        reboot
 	    fi
 	else
-		dialog \
-		--title 'Atenção' \
-		--ok-label 'OK' \
-		--msgbox '\n  Você ainda não baixou a imagem do linux.' \
-		7 50
+        	zenity --title="Atenção" \
+       	        --warning --text="Você ainda não baixou a imagem do Linux"
+	
 		log "Imagem do Linux ainda não foi baixada."
 		return 5
 	fi
@@ -220,11 +212,9 @@ baixa_imagens() {
 	sizelocwin="0"
 	[ -e ${img_win} ] && sizelocwin=$(du ${img_win} | cut -f1 )
 	if [ "$sizelocwin" = "$tamwindows" ]; then
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\nA imagem do Windows no computador já é a mais recente.' \
-        7 50
+            zenity --title="Atenção" \
+       	    --warning --text="A imagem do Windows no computador já é a mais recente." \
+
 	log "ERRO: Imagem do Windows já é a mais recente."
         return 4
     fi
@@ -233,11 +223,9 @@ baixa_imagens() {
 	sizeloclin="0"
 	[ -e ${img_lin} ] && sizeloclin=$(du ${img_lin} | cut -f1)
 	if [ "$sizeloclin" = "$tamlinux" ]; then
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\n A imagem do Linux no computador já é a mais recente.' \
-        7 50
+            zenity --title="Atenção" \
+       	    --warning --text="\n A imagem do Linux no computador já é a mais recente." \
+
 	log "ERRO: Imagem do Linux já é a mais recente."
         return 4
     fi
@@ -295,7 +283,7 @@ baixa_imagens() {
 	    log "Download das imagens do Windows e Linux finalizado."
 	    sleep 30
 	
-    ) | dialog --title "Baixando imagens..." --gauge "Baixando imagens do Windows e Linux do servidor RISOS para maquina local" 8 50 0
+    ) | zenity --progress --title="Baixando imagens..." --text="Baixando imagens do Windows e Linux do servidor RISOS para maquina local" --auto-close
 
 	log "Finalizando rtorrent."
 	#Finaliza download
@@ -313,11 +301,9 @@ baixa_imagem_windows() {
 	sizelocwin="0"
 	[ -e ${img_win} ] && sizelocwin=$(du ${img_win} | cut -f1)
 	if [ "$sizelocwin" = "$tamwindows" ]; then
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\n A imagem no computador já é a mais recente.' \
-        7 50
+          zenity --title="Atenção" \
+       	  --warning --text="\n A imagem no computador já é a mais recente." \
+
 	log "ERRO: A imagem do Windows é a mais recente."
         return 4
     fi
@@ -364,7 +350,7 @@ baixa_imagem_windows() {
 	    log "Download do Windows finalizado."
 	    sleep 30
 	
-    ) | dialog --title "Baixando imagem..." --gauge "Baixando imagem do Windows do servidor RISOS para maquina local" 8 50 0
+    ) | zenity --progress --title="Baixando imagem..." --text="Baixando imagem do Windows do servidor RISOS para a maquina local" --auto-close 
 
 	log "Finalizando rtorrent."
 	#Finaliza download
@@ -383,11 +369,9 @@ baixa_imagem_linux() {
 	sizeloclin="0"
 	[ -e ${img_lin} ] && sizeloclin=$(du ${img_lin} | cut -f1)
 	if [ "$sizeloclin" = "$tamlinux" ]; then
-        dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\n A imagem no computador já é a mais recente.' \
-        7 50
+            zenity --title="Atenção" \
+       	    --warning --text="\n A imagem no computador já é a mais recente." \
+
 	log "ERRO: A imagem do Linux já é a mais recente."
         return 4
     fi
@@ -433,7 +417,7 @@ baixa_imagem_linux() {
 	    echo 100
 	    log "Download do Linux finalizado."
 	    sleep 30
-    ) | dialog --title "Baixando imagem..." --gauge "Baixando imagem do Linux do servidor RISOS para maquina local" 8 50 0
+    ) | zenity --progress --title="Baixando imagem..." --text="Baixando imagem do Linux do servidor RISOS para a maquina local" --auto-close
 
 	log "Finalizando rtorrent"
 	#Finaliza download
@@ -461,12 +445,11 @@ instala_rec() {
 		reboot
 	else
 		log "ERRO: Não foi possível instalar a imagem de recuperação."
-		dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\n      ...NOSSA!!!, o script falhou!!!...     
-...reinicie o computador e tente outra vez...' \
-        8 50
+		
+        	zenity --title="Atenção" \
+       	        --warning --text="\n      ...NOSSA!!!, o script falhou!!!...     
+...reinicie o computador e tente outra vez..." \
+
 	fi
 
 }
