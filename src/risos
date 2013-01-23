@@ -896,7 +896,7 @@ menu_criar_torrents() {
 #Menu pricipal.
 menu() {
         while : ; do
-        opcao="$(zenity --width=400 --height=400 --list --column "RISO - 0.5" \
+        opcao=$(zenity --width=400 --height=400 --list --column "RISO - 0.5" \
                 --title="Menu" \
               "Iniciar servidor"   \
                "Criar imagens"  \
@@ -904,7 +904,7 @@ menu() {
                      "Criar live-cd"                  \
                      "Atualiza"             \
                      "Creditos"                   \
-                      "Help"                    \ )"
+                      "Help"                     )
 
                 # ESC, sai do programa...
                 [ $? -ne 0 ] && break
