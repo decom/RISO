@@ -515,7 +515,7 @@ menu_baixa_imagens() {
 #Menu principal.
 menu() {
         while : ; do
-        opcao="$(zenity --width=400 --height=400 --list --column "RISO - 0.5" \
+        opcao=$(zenity --width=400 --height=400 --list --column "RISO - 0.5" \
                 --title="Menu" \
               "Instalar imagens ja existentes"   \
                "Baixar e instalar novas imagens"  \
@@ -523,7 +523,7 @@ menu() {
                      "Atualiza"                  \
                      "Configurações"             \
                      "Creditos"                   \
-                      "Help"                    \ )"
+                      "Help"                     )
 
                 # ESC, sai do programa...
                 [ $? -ne 0 ] && break
