@@ -7,14 +7,6 @@
 dep_cli="avahi-utils rtorrent screen ntfs-3g ssh"
 dep_ser="avahi-utils avahi-daemon bittorrent rtorrent screen ntfs-3g grub2 ssh coreutils mkisofs genisoimage findutils bash passwd sed squashfs-tools casper rsync mount eject libdebian-installer4 os-prober ubiquity user-setup discover laptop-detect syslinux xterm util-linux xresprobe cdrecord"
 
-# Desabilita o UUID no ubuntu
-DisableUUID(){ 
-b=`cat /boot/grub/grub.cfg | grep =UUID=`
-uuidUbuntu=`(cut -d ' ' -f3 | cut -d '=' -f2-3)<<<${b}`
-partLinux=`os-prober | grep linux | cut -d ':' -f1` 
-sed "s|${uuidUbuntu}|${partLinux}|g" -i /boot/grub/grub.cfg
-}
-
 menu() {
     apt-get update
     apt-get install -y dialog
@@ -121,16 +113,13 @@ instala_risos() {
     sa_partwindows=`blkid ${partwindows} | cut -d'"' -f4`
     
     #Prepara grub2
-    #sed s/'GRUB_DEFAULT=0'/'GRUB_DEFAULT=1'/g -i /etc/default/grub
-    sed s/'GRUB_DISTRIBUTOR=*'/'#GRUB_DISTRIBUTOR='/g -i /etc/default/grub
+    sed s/'GRUB_DISTRIBUTOR=*'/''/g -i /etc/default/grub
     echo 'GRUB_DISTRIBUTOR=Recuperacao' >> /etc/default/grub
     sed s/'#GRUB_DISABLE_LINUX_UUID=true'/'GRUB_DISABLE_LINUX_UUID=true'/g -i /etc/default/grub
     sed s/'#GRUB_DISABLE_LINUX_RECOVERY="true"'/'GRUB_DISABLE_LINUX_RECOVERY="true"'/g -i /etc/default/grub
     rm -f /etc/grub.d/20_memtest86+
     mv /etc/grub.d/10_linux /etc/grub.d/50_linux
     update-grub
-  
-    DisableUUID #modificacao
   
     #Cria riso.service
     echo "Criando arquivo de configuração..."
@@ -176,51 +165,6 @@ instala_risos() {
     echo '  </service>' >> /etc/avahi/services/riso.service
     echo '</service-group>' >> /etc/avahi/services/riso.service
     
-       
-    # preinst script for remastersys
-    if [ -d /remastersys ]; then
-    mv /remastersys /home
-    fi
-
-    if [ -f /etc/remastersys.conf ]; then
-    mv /etc/remastersys.conf /etc/remastersys.conf.old
-    fi
-
-    if [ -f /etc/remastersys/isolinux/splash.pcx ]; then
-    mv /etc/remastersys/isolinux/splash.pcx /etc/remastersys/isolinux/splash.pcx.saved
-    fi
-
-    if [ -f /etc/remastersys/isolinux/splash.rle ]; then
-    mv /etc/remastersys/isolinux/splash.rle /etc/remastersys/isolinux/splash.rle.saved
-    fi
-
-    if [ -f /etc/remastersys/grub/splash.xpm.gz ]; then
-    mv /etc/remastersys/grub/splash.xpm.gz /etc/remastersys/grub/splash.xpm.gz.saved
-    fi
-
-    #Instalação do remastersys
-    mkdir -p /etc/remastersys
-    cp -r ./src/remastersys/remastersys/grub /etc/remastersys
-    cp -r ./src/remastersys/remastersys/isolinux /etc/remastersys
-    cp -r ./src/remastersys/remastersys/preseed /etc/remastersys
-    cp ./src/remastersys/remastersys.conf /etc/remastersys.conf
-
-    # postinst script for remastersys
-    if [ -f /etc/remastersys/isolinux/splash.pcx.saved ]; then
-    mv /etc/remastersys/isolinux/splash.pcx.saved /etc/remastersys/isolinux/splash.pcx
-    fi
-
-    if [ -f /etc/remastersys/isolinux/splash.rle.saved ]; then
-    mv /etc/remastersys/isolinux/splash.rle.saved /etc/remastersys/isolinux/splash.rle
-    fi
-
-    if [ -f /etc/remastersys/grub/splash.xpm.gz.saved ]; then
-    mv /etc/remastersys/grub/splash.xpm.gz.saved /etc/remastersys/isolinux/splash.xpm.gz
-    fi
-
-    if [ -f /etc/remastersys.conf.old ]; then
-    mv /etc/remastersys.conf.old /etc/remastersys.conf
-    fi
     
     #Se estiver usando windows 7. Muda arquivo de boot para não usar mais UUID.
     windows7=`os-prober | grep "Windows 7"`
@@ -236,12 +180,11 @@ instala_risos() {
     echo "Tente risos para iniciar"
 }
 
-
-
 #Verifica se usuário é o root antes de executar.
-USER=`id -u`
-if [ $USER == '0' ]; then
-    menu
+if [ $(id -u) -ne "0" ];then
+	echo "Este script deve ser executado com o usuario root"
+	echo "\"Great scripts come with great responsabilities...\" - Uncle Juan"
+	exit 1
 else
-    echo "Só o root pode fazer isso, jovenzinho!"
+	menu
 fi
