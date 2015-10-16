@@ -4,20 +4,19 @@
 # Arquivo de instalação do riso e do risos
 # --------------------------------------------------------------------------
 
-dep_cli="avahi-utils rtorrent screen ntfsprogs ssh"
-dep_ser="avahi-utils avahi-daemon bittorrent rtorrent screen ntfsprogs grub2 ssh coreutils mkisofs genisoimage findutils bash passwd sed squashfs-tools casper rsync mount eject libdebian-installer4 os-prober ubiquity user-setup discover1 discover laptop-detect syslinux xterm util-linux xresprobe cdrecord"
+dep_cli="avahi-utils rtorrent screen ntfs-3g ssh"
+dep_ser="avahi-utils avahi-daemon bittorrent rtorrent screen ntfs-3g grub2 ssh coreutils mkisofs genisoimage findutils bash passwd sed squashfs-tools casper rsync mount eject libdebian-installer4 os-prober ubiquity user-setup discover laptop-detect syslinux xterm util-linux xresprobe cdrecord"
 
-# modificaçao -- dessabila o UUID no ubuntu
+# Desabilita o UUID no ubuntu
 DisableUUID(){ 
 b=`cat /boot/grub/grub.cfg | grep =UUID=`
 uuidUbuntu=`(cut -d ' ' -f3 | cut -d '=' -f2-3)<<<${b}`
 partLinux=`os-prober | grep linux | cut -d ':' -f1` 
-
 sed "s|${uuidUbuntu}|${partLinux}|g" -i /boot/grub/grub.cfg
-
 }
 
 menu() {
+    apt-get update
     apt-get install -y dialog
 	opcao=$( dialog --stdout \
 	--title	'Instalação do RISO' \
@@ -29,9 +28,9 @@ menu() {
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
-		'"RISOS"') instala_risos;;
-		'"RISO"') instala_riso;;
-		'"RISOS" "RISO"') instala_riso; instala_risos;;
+		"RISOS") instala_risos;;
+		"RISO") instala_riso;;
+		"RISOS RISO") instala_riso; instala_risos;;
 	esac
 }
 
@@ -39,7 +38,14 @@ instala_riso() {
     echo "Instalando Cliente (RISO)..."
     
     echo "Baixando dependências..."
-    apt-get install -y $dep_cli
+    for i in $dep_cli
+    do
+    	apt-get install -y $i
+    	if [ "$?" != "0" ]; then
+    		 echo "Falha ao instalar RISO - Erro ao baixar a dependência: $i"
+    		 return 1
+    	fi
+    done
     
     echo "Criando árvore de diretórios..."
     mkdir -p /usr/riso
@@ -75,7 +81,14 @@ instala_risos() {
     mv /etc/shadow.tmp /etc/shadow
     
     echo "Baixando dependências..."
-    apt-get install -y $dep_ser
+    for i in $dep_ser
+    do
+    	apt-get install -y $i
+    	if [ "$?" != "0" ]; then
+    		 echo "Falha ao instalar RISOS - Erro ao baixar a dependência: $i"
+    		 return 1
+    	fi
+    done
     
     echo "Criando árvore de diretórios..."
     mkdir -p /usr/riso
