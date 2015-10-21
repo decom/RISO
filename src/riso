@@ -13,17 +13,6 @@ riso_conf=$dir_riso/riso.conf
 riso_part=$dir_riso/riso.part
 arq_log=$dir_riso/riso.log
 
-# modificaçao - dessabila o UUID no ubuntu
-DisableUUID(){ 
-b=`cat /boot/grub/grub.cfg | grep =UUID=`
-uuidUbuntu=`(cut -d ' ' -f3 | cut -d '=' -f2-3)<<<${b}`
-partLinux=`os-prober | grep linux | cut -d ':' -f1` 
-
-sed "s|${uuidUbuntu}|${partLinux}|g" -i /boot/grub/grub.cfg
-
-}
-
-
 #Função de Log
 log(){
     [ -e $arq_log ] || touch $arq_log
@@ -31,7 +20,7 @@ log(){
 }
 
 #Carrega variaveis disponibilizadas pelo avahi para variáveis do sistema.
-carrega_variaveis() {
+carregar_variaveis() {
 
     avahi_saida=`avahi-browse -rtp _DECOM_RISO._tcp | grep '='`
     #modificaçao
@@ -226,7 +215,7 @@ instala_linux() {
 baixa_imagem_windows() {
 	log "Iniciando download do Windows."
 	echo "Conectando ao servidor..."
-	carrega_variaveis || return 1
+	carregar_variaveis || return 1
 
     #Vefifica se imagem já é a mais recente
 	sizelocwin="0"
@@ -271,7 +260,7 @@ baixa_imagem_linux() {
 
 	log "Iniciando download do Linux."
 	echo "Conectando ao servidor..."
-	carrega_variaveis || return 1
+	carregar_variaveis || return 1
 	
     #Vefifica se imagem já é a mais recente
 	sizeloclin="0"
@@ -309,67 +298,6 @@ baixa_imagem_linux() {
 
 }
 
-#Instala imagem do SO com o R.I.S.O..
-instala_rec() {
-	log "Iniciando instalação da recuperação."
-	log "Instalando recuperação."
-	#Instala imagem
-	tar -xvf rec.tar
-	
-	#instala o grub
-	log "Instalando o GRUB."
-	chroot /mnt update-grub
-	(chroot /mnt grub-install /dev/sda && log "GRUB instalado com sucesso.") || log "ERRO: GRUB não instalado com sucesso."
-
-	#Verifica se a instalaçao foi concluida con sucesso
-	if [ -e /mnt/vmlinuz ]
-	then
-	    	clear
-		log "Imagem instalada de recuperação instalada com sucesso."
-		log "Reiniciando o computador."
-		reboot
-	else
-		log "ERRO: Não foi possível instalar a imagem de recuperação."
-		dialog \
-        --title 'Atenção' \
-        --ok-label 'OK' \
-        --msgbox '\n      ...NOSSA!!!, o script falhou!!!...     
-...reinicie o computador e tente outra vez...' \
-        8 50
-	fi
-
-}
-
-#Baixa imagem do SO com o R.I.S.O.. 
-baixa_rec() {
-	log "Iniciando download da imagem de recuperação."
-	echo "Conectando ao servidor..."
-	carrega_variaveis || return 1
-
-	#Baixa refaz tabela de partiçao
-	log "Baixando tabela de partições."
-	(scp -o StrictHostKeyChecking=no root@${servidor}:${tab_part} ${tab_part} && log "Tabela de partições baixada com sucesso") || log "ERRO: Não foi possível baixar tabela de partições."
-	swapoff -a
-	log "Montando nova tabela de partições."
-	sfdisk -f /dev/sda < ${tab_part}
-
-	#Desmonta partição
-	umount ${partrec} 2> /dev/null 
-
-	log "Formatando partições e criando swap"
-	#Formata partição 
-	mkfs.${sa_partrec} ${partrec}
-	mkswap ${partswap}
-	swapon ${partswap}
-
-	#Baixa imagem .tar via scp
-	umount /mnt 2> /dev/null
-	mount ${partrec} /mnt
-	cd /mnt
-	log "Iniciando o download da imagem de recuperação."
-	(scp -o StrictHostKeyChecking=no root@${servidor}:${img_rec} ./rec.tar && log "Download da imagem de recuperação finalizada.") || log "ERRO: Não foi possível realizar o download da imagem de recuperação."
-}
-
 #Define configurações do riso
 configuracoes() {
     dialog                                          \
@@ -385,41 +313,13 @@ configuracoes() {
 
 }
 
-#Atualiza R.I.S.O..
-atualiza() {
-	log "Iniciando atualização do script."
-	log "Verificando disponibilidade do servidor de atualização."
-	ping -q -c 1 200.131.37.236 > /dev/null 2>&1
-	if [ "$?" -eq "0" ]; then
-		log "Iniciando download do script novo."
-		(wget 200.131.37.236/riso/riso0.5 -O /usr/riso/riso && log "RISO atualizado com sucesso.") || log "ERRO: Não foi possível baixar o novo script."
-		
-		#Menssagem de atualizado com sucesso.
-		dialog \
-	        --ok-label 'OK' \
-        	--title 'Atenção' \
-        	--msgbox '\n   RISO atualizado com sucesso.\n' \
-		    7 39
-		
-		bash /usr/riso/riso
-		exit
-	else
-		dialog \
-		--ok-label 'OK' \
-		--title 'ERRO' \
-		--msgbox '\n   Esta versão já é a mais recente'\
-		7 40
-		log "ERRO: RISO já é a versão mais nova."
-	fi
-}
-
-helpi() {
+ajuda() {
 	dialog \
 	--ok-label 'OK' \
 	--title 'Help' \
 	--msgbox '                                       \n
 		Envie um e-mail com suas duvidas e sugestões \n
-		para: "riso@comp.eng.br" e reponderei o   \n
+		para: "alainandre@decom.cefetmg.br" e reponderei o   \n
 		mais rápido possível.'                    \
 		0 0
 }
@@ -431,8 +331,8 @@ creditos() {
 	--ok-label 'OK' \
 	--title 'Creditos' \
 	--msgbox '                                       \n
-		 CENTRO FEDERAL DE EDUCAÇAO TECNOLOGICA  \n
-		        Engenharia da Computaçao         \n
+		                CEFET-MG                 \n
+		        Engenharia de Computação         \n
 		                                         \n
 		      Cristiano Goulart Lopes Dias       \n
 		    Vinicius Tinti de Paula Oliveira     \n
@@ -452,7 +352,7 @@ creditos() {
 }
 
 #Checklist de seleção.
-menu_instala_imagens() {
+menu_instalar_imagens() {
 
 	opcao=$( dialog --stdout \
 	--ok-label 'Confirmar'   \
@@ -463,15 +363,15 @@ menu_instala_imagens() {
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
-		'"Windows"') instala_windows;;
-		'"Linux"') instala_linux;;
-		'"Windows" "Linux"') instala;;
+		"Windows") instala_windows;;
+		"Linux") instala_linux;;
+		"Windows Linux") instala;;
 	esac
 	
 }
 
 #Checklist de seleção.
-menu_baixa_imagens() {
+menu_baixar_imagens() {
 
 	opcao=$( dialog --stdout \
 	--ok-label 'Confirmar'   \
@@ -482,9 +382,9 @@ menu_baixa_imagens() {
 
 	# De acordo com a opção escolhida, executa funcoes
 	case $opcao in
-		'"Windows"') baixa_imagem_windows && instala_windows;;
-		'"Linux"') baixa_imagem_linux && instala_linux;;
-		'"Windows" "Linux"') baixa_imagem_linux && baixa_imagem_windows && instala;;
+		"Windows") baixa_imagem_windows && instala_windows;;
+		"Linux") baixa_imagem_linux && instala_linux;;
+		"Windows Linux") baixa_imagem_linux && baixa_imagem_windows && instala;;
 	esac
 	
 }
@@ -497,29 +397,25 @@ menu() {
 		dialog --stdout                                         \
 		--ok-label 'Confirmar'                                  \
 		--cancel-label 'Sair'                                   \
-		--title 'RISO - 0.8'                                    \
+		--title 'RISO - 1.0'                                    \
 		--menu 'Escolha o que voce quer fazer:'                 \
 			0 0 0                                               \
-			1 'Instalar imagens ja existentes'                  \
+			1 'Instalar imagens já existentes'                  \
 			2 'Baixar e instalar novas imagens'                 \
-			3 'Baixar e instalar imagem de recuperação(LIVE_CD)'\
-			4 'Atualiza'                                        \
-			5 'Configurações'                                   \
-			6 'Creditos'                                        \
-			7 'Help'                                            )
+			3 'Configurações'                                   \
+			4 'Créditos'                                        \
+			5 'Ajuda'                                            )
 	
 		# ESC, sai do programa...
 		[ $? -ne 0 ] && break
 	
 		# De acordo com a opção escolhida, executa funçao
 		case $opcao in
-		1) menu_instala_imagens;;
-		2) menu_baixa_imagens;;
-		3) baixa_rec ; instala_rec;;
-		4) atualiza;;
-		5) configuracoes;;
-		6) creditos;;
-		7) helpi;;
+		1) menu_instalar_imagens;;
+		2) menu_baixar_imagens;;
+		3) configuracoes;;
+		4) creditos;;
+		5) ajuda;;
 	esac	
 
 	done
@@ -538,57 +434,48 @@ avaliar_args() {
 		return
 	#Mostra help se requisitado
 	elif [ ${argumento[1]} = "--help" ]; then
-		echo "Uso: riso [OPÇÃO] [ARQUIVO]...                        "
+		echo "Uso: riso [OPÇÃO] [ARQUIVO]...                              "
 		echo "Baixa e/ou instala imagen(s) do(s) sistema(s) operacional(s)"
 		echo "                                                            "
-		echo "   --baixa, baixa as imagens sucessoras                     "
+		echo "   --baixar, baixa as imagens sucessoras                    "
 		echo "       windows --imagem do windows                          "
 		echo "       linux --imagem do linux                              "
-		echo "       rec --imagem do sistema de recuperação               "
-		echo "								  "
-		echo "   --instala, instala as imagens sucessoras                 "
+		echo "								   							  "
+		echo "   --instalar, instala as imagens sucessoras                "
 		echo "       windows --imagem do windows                          "
 		echo "       linux --imagem do linux                              "
-		echo "       rec --imagem do sistema de recuperação               "
-		echo "                                                            "
-		echo "A imagem de recuperação(rec) deve ser baixada e/ou instalada"
-		echo "a partir de um SO externo ao HD (Ex: cd de boot).           "
 		echo "                                                            "
 		echo "Exemplo:                                                    "
-		echo "    Baixa imagens do linux e do windows e instala a do linux"
+		echo "   Baixar imagens do Windows e do Linux e instalar o Linux  "
 		echo "      riso --baixa windows linux --instala linux            "
 		echo "                                                            "
-		echo "Comunicar \"bugs\" para <riso@comp.eng.br>               "
+		echo "Comunicar \"bugs\" para <alainandre@decom.cefetmg.br>       "
 		exit
 	#Tenta executar
 	else
 		#Verifica syntax 
 		for i in $(seq 1 ${argumento[0]}); do
-			if [ ${argumento[$i]} = "--baixa" ]; then
-				until [ $i -eq ${argumento[0]} -o ${argumento[$i]} = "--instala" ]; do
+			if [ ${argumento[$i]} = "--baixar" ]; then
+				until [ $i -eq ${argumento[0]} -o ${argumento[$i]} = "--instalar" ]; do
 					((i++))
 					case ${argumento[$i]} in
 						"windows") break;;
 						"linux") break;;
-						"rec") break;;
 						*) echo "riso: Syntax ERRO"; echo "Tente \`riso --help\` para mais informações"; exit;;
 					esac
 				done
-			elif [ ${argumento[$i]} = "--instala" ]; then
+			elif [ ${argumento[$i]} = "--instalar" ]; then
 				until [ $i -eq ${argumento[0]} -o ${argumento[$i]} = "--baixa" ]; do
 					((i++))
 					case ${argumento[$i]} in
 						"windows") break;;
 						"linux") break;;
-						"rec") break;;
 						*) echo "riso: Syntax ERRO"; echo "Tente \`riso --help\` para mais informações"; exit;;
 					esac
 				done
 			elif [ ${argumento[$i]} = "windows" ]; then
 				continue
 			elif [ ${argumento[$i]} = "linux" ]; then
-				continue
-			elif [ ${argumento[$i]} = "rec" ]; then
 				continue
 			else
 				echo "riso: Syntax ERRO"
@@ -598,31 +485,27 @@ avaliar_args() {
 		done
 		
 		#Executa comando
-		carrega_variaveis || return 1
+		carregar_variaveis || return 1
 		for i in $(seq 1 ${argumento[0]}); do
 			if [ ${argumento[$i]} = "--baixa" ]; then
-				until [ $i -eq ${argumento[0]} -o ${argumento[$i]} = "--instala" ]; do
+				until [ $i -eq ${argumento[0]} -o ${argumento[$i]} = "--instalar" ]; do
 					((i++))
 					case ${argumento[$i]} in
 						"windows") baixa_imagem_windows;;
 						"linux") baixa_imagem_linux;;
-						"rec") baixa_rec;;
 					esac
 				done
 			elif [ ${argumento[$i]} = "--instala" ]; then
-				until [ $i -eq ${argumento[0]} -o ${argumento[$i]} = "--baixa" ]; do
+				until [ $i -eq ${argumento[0]} -o ${argumento[$i]} = "--baixar" ]; do
 					((i++))
 					case ${argumento[$i]} in
 						"windows") instala_windows;;
 						"linux") instala_linux;;
-						"rec") instala_rec;;
 					esac
 				done
 			elif [ ${argumento[$i]} = "windows" ]; then
 				continue
 			elif [ ${argumento[$i]} = "linux" ]; then
-				continue
-			elif [ ${argumento[$i]} = "rec" ]; then
 				continue
 			fi
 		done
@@ -631,14 +514,16 @@ avaliar_args() {
 	
 }
 
-#Verifica se usuário é root antes de iniciar o riso.
+#Verifica se usuário é root antes de iniciar o risos.
 USER=`id -u`
-if [ $USER == '0' ]; then  
-    log "Iniciando RISO --------------------------------------------------------"
+if [ $USER == '0' ]; then
+    log "Iniciando RISO -------------------------------------------------------"
     avaliar_args $@
 	menu
-	log "Encerrando RISO -------------------------------------------------------"
+    log "Finalizando RISO -----------------------------------------------------"
 	clear
 else
-	echo 'Só o root pode fazer isso, jovenzinho!'
+	echo "Este script deve ser executado com o usuario root"
+	echo "\"Great scripts come with great responsabilities...\" - Uncle Juan"
+	exit 1
 fi
