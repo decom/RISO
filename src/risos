@@ -63,7 +63,7 @@ iniciar_servidor() {
 				bttrack --port 6969 --dfile dstate 2> /dev/null &
 				cd ${dir_img}	
 				rtorrent ${tor_lin} ${tor_win}
-				rm /etc/avahi/services/*
+				rm -f /etc/avahi/services/*
 				log "Tracker finalizado para Windows e Linux."
 			else
 				dialog \
@@ -481,7 +481,7 @@ menu() {
 USER=`id -u`
 if [ $USER == '0' ]; then
     log "Iniciando RISOS -------------------------------------------------------"
-    rm /etc/avahi/services/*
+    rm -f /etc/avahi/services/*
     carregar_variaveis && menu
     log "Finalizando RISOS -----------------------------------------------------"
 	clear
