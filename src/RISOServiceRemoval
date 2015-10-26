@@ -1,0 +1,3 @@
+#!/bin/bash
+rm /etc/avahi/services/*
+exit 0
