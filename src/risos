@@ -54,10 +54,10 @@ verificar_conexao(){
 iniciar_servidor() {
 	carregar_variaveis;
 	if [ -e ${img_win} -a -e ${img_lin} ]; then
-		if [ -e ${dir_img}/${tor_lin} -a -e ${dir_img}/${tor_win} ]; then
-			Windows_IP=`cat ${dir_img}/Windows_IP`
-	       	Linux_IP=`cat ${dir_img}/Linux_IP`
-	       	if [[ "$servidor" == "$Windows_IP" && "$servidor" == "$Linux_IP" ]]; then
+		if [ -e "${dir_img}/${tor_lin}" -a -e "${dir_img}/${tor_win}" ]; then
+			Windows_IP=`grep "$servidor" ${dir_img}/Windows_IP | wc -l`
+	       	Linux_IP=`grep "$servidor" ${dir_img}/Linux_IP \ wc -l`
+	       	if [[ 1 -eq $Windows_IP && 1 == $Linux_IP ]]; then
 	       		criar_riso_service;
 	    		log "Tracker iniciado para Windows e Linux."
 				bttrack --port 6969 --dfile dstate 2> /dev/null &
@@ -80,7 +80,7 @@ iniciar_servidor() {
 			--ok-label 'OK' \
 			--msgbox '\n Não existem torrents prontos. Crie os torrents' \
 			7 40
-			log "ERRO: Ao iniciar tracker para Windows e Linux, Não existem imagens prontas."
+			log "ERRO: Ao iniciar tracker para Windows e Linux, Não existem torrents prontas."
 			return 2
 		fi				
 	else
