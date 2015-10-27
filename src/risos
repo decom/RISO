@@ -54,10 +54,10 @@ verificar_conexao(){
 iniciar_servidor() {
 	carregar_variaveis;
 	if [ -e ${img_win} -a -e ${img_lin} ]; then
-		if [ -e "${dir_img}/${tor_lin}" -a -e "${dir_img}/${tor_win}" ]; then
+		if [ -e "${tor_lin}" -a -e "${tor_win}" ]; then
 			Windows_IP=`grep "$servidor" ${dir_img}/Windows_IP | wc -l`
-	       	Linux_IP=`grep "$servidor" ${dir_img}/Linux_IP \ wc -l`
-	       	if [[ 1 -eq $Windows_IP && 1 == $Linux_IP ]]; then
+	       	Linux_IP=`grep "$servidor" ${dir_img}/Linux_IP | wc -l`
+	       	if [[ 1 -eq $Windows_IP && 1 -eq $Linux_IP ]]; then
 	       		criar_riso_service;
 	    		log "Tracker iniciado para Windows e Linux."
 				bttrack --port 6969 --dfile dstate 2> /dev/null &
@@ -271,7 +271,6 @@ criar_riso_service() {
     echo "    <txt-record>Servidor=$servidor</txt-record>" >> /etc/avahi/services/riso.service #
     echo '' >> /etc/avahi/services/riso.service #
     echo '    <!--Variáveis com sistema de arquivo das partições-->' >> /etc/avahi/services/riso.service
-    echo "    <txt-record>sa_partrec=${sa_partrec}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>sa_partlinux=${sa_partlinux}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>sa_partwindows=${sa_partwindows}</txt-record>" >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
@@ -281,7 +280,6 @@ criar_riso_service() {
     echo '' >> /etc/avahi/services/riso.service
     echo '    <!--Localização dos sistemas operacionais no HD-->' >> /etc/avahi/services/riso.service
     echo "    <txt-record>partswap=${partswap}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>partrec=${partrec}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>partlinux=${partlinux}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>partwindows=${partwindows}</txt-record>" >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
