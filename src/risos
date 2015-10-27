@@ -45,7 +45,7 @@ verificar_conexao(){
         --ok-label 'OK' \
         --msgbox 'O servidor RISOS precisa estar conectado à rede. Verifique sua conexão e tente novamente.' \
         0 0
-        log "ERRO: Servidor não encontrado na rede."
+        log "ERRO: Servidor não conectado à rede."
         exit 1
     fi   
 }
@@ -60,7 +60,7 @@ iniciar_servidor() {
 	       	if [[ 1 -eq $Windows_IP && 1 -eq $Linux_IP ]]; then
 	       		criar_riso_service;
 	    		log "Tracker iniciado para Windows e Linux."
-				bttrack --port 6969 --dfile dstate 2> /dev/null &
+				bttrack --port 6969 --dfile dstate > /dev/null &
 				cd ${dir_img}	
 				rtorrent ${tor_lin} ${tor_win}
 				rm -f /etc/avahi/services/*
@@ -99,7 +99,7 @@ iniciar_servidor_windows() {
 
 	if [ -e ${img_win} ]; then
     	log "Tracker iniciado para Windows."
-		bttrack --port 6969 --dfile dstate 2> /dev/null &
+		bttrack --port 6969 --dfile dstate > /dev/null &
 		cd ${dir_img}
 		rtorrent ${tor_win}
 		log "Tracker finalizado para Windows."
@@ -120,7 +120,7 @@ iniciar_servidor_linux() {
 
 	if [ -e ${img_lin} ]; then
 	    log "Tracker iniciado para Linux."
-		bttrack --port 6969 --dfile dstate 2> /dev/null &
+		bttrack --port 6969 --dfile dstate > /dev/null &
 		cd ${dir_img}		
 		rtorrent ${tor_lin}
 		log "Tracker finalizado para Linux."
