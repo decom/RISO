@@ -98,6 +98,9 @@ instalar() {
 	    
 	    sleep 3
 	    log "Instalação do Windows e do Linux finalizada."
+            
+            #Correção UUID partição Linux
+	    tune2fs $partlinux -U $linuxUUID
 	    update-grub
 	
 	    #verifica se desliga computador
@@ -191,6 +194,9 @@ instalar_linux() {
 	    
 	    sleep 3
 	    log "Instalação do Linux finalizada."
+
+            #Correção UUID partição Linux
+	    tune2fs $partlinux -U $linuxUUID
 	    update-grub
 
 	    
