@@ -24,8 +24,8 @@ carregar_variaveis() {
     partswap=`blkid | grep swap | grep -v ram | cut -d':' -f1`
     
     #Pega sistema de arquivo das partiçoes.
-    sa_partlinux=`blkid ${partlinux} | cut -d'"' -f4`
-    sa_partwindows=`blkid ${partwindows} | cut -d'"' -f4`
+    sa_partlinux=`blkid ${partlinux} | sed s/' '/'\n'/g | grep "TYPE" | cut -d'"' -f2`
+    sa_partwindows=`blkid ${partwindows} |  sed s/' '/'\n'/g | grep "TYPE" | cut -d'"' -f2`
     
     #Tamanho total das imagens criadas no servidor.
     if [ -e ${img_win} ]; then
