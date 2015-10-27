@@ -71,9 +71,9 @@ iniciar_servidor() {
 				dialog \
 				--title 'Atenção' \
 				--ok-label 'OK' \
-				--msgbox '\n Os torrents não possuem o mesmo IP do servidor. Recrie os torrents' \
+				--msgbox '\n Os torrents não possuem o mesmo IP do servidor. Recrie os torrents.' \
 				7 40
-				log "ERRO: Ao iniciar tracker para Windows e Linux, Não existem imagens prontas."
+				log "ERRO: Ao iniciar tracker para Windows e Linux, IPs do torrents diferetens do IP do servidor."
 				return 2
 			fi
 		else
@@ -82,7 +82,7 @@ iniciar_servidor() {
 			--ok-label 'OK' \
 			--msgbox '\n Não existem torrents prontos. Crie os torrents' \
 			7 40
-			log "ERRO: Ao iniciar tracker para Windows e Linux, Não existem torrents prontas."
+			log "ERRO: Ao iniciar tracker para Windows e Linux, Não existem torrents prontos."
 			return 2
 		fi				
 	else
@@ -98,44 +98,88 @@ iniciar_servidor() {
 
 #Inicia tracker para disponibilizar imagem do Windows na rede.
 iniciar_servidor_windows() {
-
+	carregar_variaveis;
 	if [ -e ${img_win} ]; then
-    	log "Tracker iniciado para Windows."
-		bttrack --port 6969 --dfile dstate > /dev/null &
-		cd ${dir_img}
-		rtorrent ${tor_win}
-		log "Tracker finalizado para Windows."
+		if [ -e "${tor_win}" ]; then
+			Windows_IP=`grep "$servidor" ${dir_img}/Windows_IP | wc -l`
+	       	if [ 1 -eq $Windows_IP ]; then
+	       		criar_riso_service;
+	    		log "Tracker iniciado para Windows."
+				bttrack --port 6969 --dfile dstate > /dev/null &
+				cd ${dir_img}	
+				rtorrent ${tor_win}
+				rm -f /etc/avahi/services/*
+				log "Tracker finalizado para Windows."
+			else
+				dialog \
+				--title 'Atenção' \
+				--ok-label 'OK' \
+				--msgbox '\n O torrent do Windows não possui o mesmo IP do servidor. Recrie o torrent.' \
+				7 40
+				log "ERRO: Ao iniciar tracker para Windows, Não existe imagem do Windows pronta."
+				return 2
+			fi
+		else
+			dialog \
+			--title 'Atenção' \
+			--ok-label 'OK' \
+			--msgbox '\n Não existe torrent do Windows pronto. Crie o torrent.' \
+			7 40
+			log "ERRO: Ao iniciar tracker para Windows, Não existe torrent pronto."
+			return 2
+		fi				
 	else
 		dialog \
 		--title 'Atenção' \
 		--ok-label 'OK' \
-		--msgbox '\nVocê ainda não criou a imagem do windows.' \
-		7 45
+		--msgbox '\n   Não existe imagem do Windows pronta. Crie a imagem.' \
+		7 40
 		log "ERRO: Ao iniciar tracker para Windows, Não existe imagem pronta."
 		return 2
-	fi
-	
+	fi	
 }
 
 #Inicia tracker para disponibilizar imagem do Linux na rede.
 iniciar_servidor_linux() {
-
+carregar_variaveis;
 	if [ -e ${img_lin} ]; then
-	    log "Tracker iniciado para Linux."
-		bttrack --port 6969 --dfile dstate > /dev/null &
-		cd ${dir_img}		
-		rtorrent ${tor_lin}
-		log "Tracker finalizado para Linux."
+		if [ -e "${tor_lin}" ]; then
+			Linux_IP=`grep "$servidor" ${dir_img}/Linux_IP | wc -l`
+	       	if [ 1 -eq $Linux_IP ]; then
+	       		criar_riso_service;
+	    		log "Tracker iniciado para Linux."
+				bttrack --port 6969 --dfile dstate > /dev/null &
+				cd ${dir_img}	
+				rtorrent ${tor_lin}
+				rm -f /etc/avahi/services/*
+				log "Tracker finalizado para Linux."
+			else
+				dialog \
+				--title 'Atenção' \
+				--ok-label 'OK' \
+				--msgbox '\n O torrent do Linux não possui o mesmo IP do servidor. Recrie o torrent.' \
+				7 40
+				log "ERRO: Ao iniciar tracker para Linux, Não existe imagem do Linux pronta."
+				return 2
+			fi
+		else
+			dialog \
+			--title 'Atenção' \
+			--ok-label 'OK' \
+			--msgbox '\n Não existe torrent do Linux pronto. Crie o torrent.' \
+			7 40
+			log "ERRO: Ao iniciar tracker para Linux, Não existe torrent pronto."
+			return 2
+		fi				
 	else
 		dialog \
 		--title 'Atenção' \
 		--ok-label 'OK' \
-		--msgbox '\nVocê ainda não criou a imagem do linux.' \
-		7 44
-		log "ERRO: Ao iniciar tracker para o Linux, Não existe imagem pronta."
+		--msgbox '\n   Não existe imagem do Linux pronta. Crie a imagem.' \
+		7 40
+		log "ERRO: Ao iniciar tracker para Linux, Não existe imagem pronta."
 		return 2
 	fi
-
 }
 
 #Cria imagem do Linux.
