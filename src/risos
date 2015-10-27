@@ -34,6 +34,8 @@ carregar_variaveis() {
     if [ -e ${img_lin} ]; then
         tamlinux=`du ${img_lin} | cut -f1`
     fi
+    #UUID da partição linux.
+    linuxUUID=`blkid ${partwindows} | cut -d'"' -f2`  
 }
 
 #Verifica se o servidor está conectado
@@ -282,6 +284,9 @@ criar_riso_service() {
     echo "    <txt-record>partswap=${partswap}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>partlinux=${partlinux}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>partwindows=${partwindows}</txt-record>" >> /etc/avahi/services/riso.service
+   	echo '' >> /etc/avahi/services/riso.service
+    echo '    <!--UUID - Partição Linux-->' >> /etc/avahi/services/riso.service
+    echo "    <txt-record>linuxUUID=${linuxUUID}</txt-record>" >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
     echo '  </service>' >> /etc/avahi/services/riso.service
     echo '</service-group>' >> /etc/avahi/services/riso.service
@@ -293,7 +298,7 @@ creditos() {
 
 	dialog \
 	--ok-label 'OK' \
-	--title 'Creditos' \
+	--title 'Créditos' \
 	--msgbox '                                       \n
 		 CENTRO FEDERAL DE EDUCAÇAO TECNOLOGICA  \n
 		        Engenharia de Computaçao         \n
