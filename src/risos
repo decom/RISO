@@ -314,7 +314,7 @@ criar_riso_service() {
     echo '    <port>1234</port>' >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
     echo '    <!--Ip do servidor-->' >> /etc/avahi/services/riso.service # modifiçaco para guarda o ip do servidor
-    echo "    <txt-record>Servidor=$servidor</txt-record>" >> /etc/avahi/services/riso.service #
+    echo "    <txt-record>servidor=$servidor</txt-record>" >> /etc/avahi/services/riso.service #
     echo '' >> /etc/avahi/services/riso.service #
     echo '    <!--Variáveis com sistema de arquivo das partições-->' >> /etc/avahi/services/riso.service
     echo "    <txt-record>sa_partlinux=${sa_partlinux}</txt-record>" >> /etc/avahi/services/riso.service
