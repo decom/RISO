@@ -35,7 +35,7 @@ carregar_variaveis() {
         tamlinux=`du ${img_lin} | cut -f1`
     fi
     #UUID da partição linux.
-    linuxUUID=`blkid ${partwindows} | cut -d'"' -f2`  
+    linuxUUID=`blkid ${partlinux} | cut -d'"' -f2`  
 }
 
 #Verifica se o servidor está conectado
