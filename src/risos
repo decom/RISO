@@ -8,6 +8,7 @@ img_lin=$dir_img/linux.tar        #arquivo da imagem do linux
 tor_win=$img_win.torrent        #torrent da imagem do windows
 tor_lin=$img_lin.torrent        #torrent da imagem do linux
 arq_log=$dir_riso/riso.log        #Arquivo de log
+dir_www=/var/www/html           #Diretório do Apache2
 
 #Função de Log
 log(){
@@ -60,7 +61,8 @@ iniciar_servidor() {
             Windows_IP=`grep "$servidor" ${dir_img}/Windows_IP | wc -l`
                Linux_IP=`grep "$servidor" ${dir_img}/Linux_IP | wc -l`
                if [[ 1 -eq $Windows_IP && 1 -eq $Linux_IP ]]; then
-                   criar_riso_service;
+                criar_riso_service;
+                cp "${tor_lin}" "${tor_win}" "${dir_www}"
                 log "Tracker iniciado para Windows e Linux."
                 bttrack --port 6969 --dfile dstate > /dev/null &
                 cd ${dir_img}    
@@ -103,7 +105,8 @@ iniciar_servidor_windows() {
         if [ -e "${tor_win}" ]; then
             Windows_IP=`grep "$servidor" ${dir_img}/Windows_IP | wc -l`
                if [ 1 -eq $Windows_IP ]; then
-                   criar_riso_service;
+                criar_riso_service;
+                cp "${tor_win}" "${dir_www}"
                 log "Tracker iniciado para Windows."
                 bttrack --port 6969 --dfile dstate > /dev/null &
                 cd ${dir_img}    
@@ -146,7 +149,8 @@ carregar_variaveis;
         if [ -e "${tor_lin}" ]; then
             Linux_IP=`grep "$servidor" ${dir_img}/Linux_IP | wc -l`
                if [ 1 -eq $Linux_IP ]; then
-                   criar_riso_service;
+                criar_riso_service;
+                cp "${tor_lin}" "${dir_www}"
                 log "Tracker iniciado para Linux."
                 bttrack --port 6969 --dfile dstate > /dev/null &
                 cd ${dir_img}    

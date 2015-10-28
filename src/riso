@@ -5,10 +5,8 @@ dir_riso=/usr/riso
 dir_img=$dir_riso/imagens
 img_win=$dir_img/windows.img
 img_lin=$dir_img/linux.tar
-img_rec=$dir_img/rec.tar
 tor_win=$img_win.torrent
 tor_lin=$img_lin.torrent
-tab_part=$dir_img/tab_part
 riso_conf=$dir_riso/riso.conf
 riso_part=$dir_riso/riso.part
 arq_log=$dir_riso/riso.log
@@ -253,7 +251,7 @@ baixa_imagem_windows() {
 
 	#Inicia download da imagen em terminal virtual.
 	log "Inicia o download do torrent do Windows."
-	(scp -o StrictHostKeyChecking=no root@${servidor}:${tor_win} ${tor_win} && log "Download do torrent do Windows finalizado.") || log "ERRO: O torrent do Windows não foi baixado."
+	(wget -O ${tor_win} "http://${servidor}/windows.img.torrent" && log "Download do torrent do Windows finalizado.") || log "ERRO: O torrent do Windows não foi baixado."
 	cd $dir_img
 	log "Iniciando Download do Windows."
 
@@ -298,7 +296,7 @@ baixa_imagem_linux() {
 
     #Inicia download da imagen em terminal virtual.
 	log "Baixando torrent do Linux."
-	(scp -o StrictHostKeyChecking=no root@${servidor}:${tor_lin} ${tor_lin} && log "Torrent do Linux baixado com sucesso.") || log "ERRO: Erro ao baixar torrent do Linux."
+	(wget -O ${tor_lin} "http://${servidor}/linux.tar.torrent" && log "Torrent do Linux baixado com sucesso.") || log "ERRO: Erro ao baixar torrent do Linux."
 	cd ${dir_img}
 	log "Iniciando download do Linux."
 	rtorrent ${tor_lin} # modificacao retirado o parametrio -d para que a tranferencia seja mostrada, nao e usado o restante do cogigo da funçao

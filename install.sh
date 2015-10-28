@@ -5,7 +5,7 @@
 # --------------------------------------------------------------------------
 
 dep_cli="avahi-utils rtorrent screen ntfs-3g ssh"
-dep_ser="avahi-utils avahi-daemon bittorrent rtorrent screen ntfs-3g grub2 ssh coreutils genisoimage findutils bash passwd sed squashfs-tools rsync mount eject libdebian-installer4 os-prober user-setup discover laptop-detect syslinux xterm util-linux"
+dep_ser="avahi-utils avahi-daemon bittorrent rtorrent screen ntfs-3g grub2 ssh coreutils genisoimage findutils bash passwd sed squashfs-tools rsync mount eject libdebian-installer4 os-prober user-setup discover laptop-detect syslinux xterm util-linux apache2"
 
 menu() {
     apt-get update
