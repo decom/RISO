@@ -22,7 +22,7 @@ carregar_variaveis() {
 
     avahi_saida=`avahi-browse -rtp _DECOM_RISO._tcp | grep 'IPv4' | grep '=' | cut -d';' -f10`
 
-    servidor=`( tr ' ' '\n' | grep "^servidor=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    servidor=`( tr ' ' '\n' | grep "^\"servidor=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     if [ -z $servidor ]; then
         dialog \
         --title 'Atenção' \
