@@ -96,10 +96,6 @@ instalar_risos() {
     cp ./src/risos /usr/riso/risos
     chmod +x /usr/riso/risos
     cp ./conf/BCD /usr/riso/
-    	
-    echo "Gerando chaves rsa..."
-    ssh-keygen -t 'rsa' -f '/root/.ssh/id_rsa' -N ''
-    su -c "cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys2"
     
     echo "Criando variáveis de configuração..."
     
