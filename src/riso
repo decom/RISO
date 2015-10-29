@@ -22,7 +22,7 @@ carregar_variaveis() {
 
     avahi_saida=`avahi-browse -rtp _DECOM_RISO._tcp | grep 'IPv4' | grep '=' | cut -d';' -f10`
 
-    servidor=`(sed s/' '/'\n'/g | grep "servidor" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    servidor=`( tr ' ' '\n' | grep "^servidor=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     if [ -z $servidor ]; then
         dialog \
         --title 'Atenção' \
@@ -34,25 +34,26 @@ carregar_variaveis() {
     fi
     
     #UUID
-    linuxUUID=`(cut -d '"' -f2 | cut -d '=' -f2) <<< ${avahi_saida}`
+    linuxUUID=`( tr ' ' '\n' | grep "^linuxUUID=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 	
-    partwindows=`(cut -d '"' -f4 | cut -d '=' -f2) <<< ${avahi_saida}` #Partição com Windows.
-    partlinux=`(cut -d '"' -f6 | cut -d '=' -f2) <<< ${avahi_saida}` #Partição com Linux.
-    partswap=`(cut -d '"' -f8 | cut -d '=' -f2) <<< ${avahi_saida}` #Partição Swap.
+    partwindows=`( tr ' ' '\n' | grep "^partwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    partlinux=`( tr ' ' '\n' | grep "^partlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    partswap=`( tr ' ' '\n' | grep "^partswap=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 
     #Tamanho total das imagens criadas no servidor.
-    tamwindows=`(cut -d '"' -f10 | cut -d '=' -f2) <<< ${avahi_saida}`
-    tamlinux=`(cut -d '"' -f12 | cut -d '=' -f2) <<< ${avahi_saida}`
+    tamwindows=`( tr ' ' '\n' | grep "^tamwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    tamlinux=`( tr ' ' '\n' | grep "^tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 
     #Sistema de arquivo das partições.
-    sa_partwindows=`(cut -d '"' -f14 | cut -d '=' -f2) <<< ${avahi_saida}`
-    sa_partlinux=`(cut -d '"' -f16 | cut -d '=' -f2) <<< ${avahi_saida}`
+    sa_partwindows=`( tr ' ' '\n' | grep "^tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    sa_partlinux=`( tr ' ' '\n' | grep "^tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     
     #Atualiza arquivo de variaveis.
     echo 'partwindows='$partwindows > $riso_part
     echo 'partlinux='$partlinux >> $riso_part
     echo 'sa_partwindows='$sa_partwindows >> $riso_part
     echo 'sa_partlinux='$sa_partlinux >> $riso_part
+    echo 'linuxUUID='$linuxUUID >> $riso_part
 
     #Log
     log "Carregando variáveis"
@@ -73,7 +74,7 @@ instalar() {
     if [ -e ${img_win} -a -e ${img_lin} ]; then
     
         #Carrega variáveis
-        [ -z $partwindows -o -z $sa_partwindows ] && [ -z $partlinux -o -z $sa_partlinux ] && . $riso_part
+        . $riso_part
     
 	    #Desmonta partiçoes.
 	    umount $partwindows 2> /dev/null
@@ -132,7 +133,7 @@ instalar_windows() {
     if [ -e ${img_win} ]; then
     
         #le do arquivo de variaveis
-        [ -z $partwindows -o -z $sa_partwindows ] && . $riso_part  
+        . $riso_part  
         
 	    #Desmonta partiçoes
 	    umount $partwindows 2> /dev/null
@@ -175,7 +176,7 @@ instalar_linux() {
     if [ -e ${img_lin} ]; then
     
        #Carrega variáveis
-       [ -z $partlinux -o -z $sa_partlinux ] && . $riso_part
+       . $riso_part
     
 		#desmonta partiçoes.
 	    umount $partlinux 2> /dev/null

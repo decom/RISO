@@ -25,8 +25,8 @@ carregar_variaveis() {
     partswap=`blkid | grep swap | grep -v ram | cut -d':' -f1`
     
     #Pega sistema de arquivo das partiçoes.
-    sa_partlinux=`blkid ${partlinux} | sed s/' '/'\n'/g | grep "^TYPE=" | cut -d'"' -f2`
-    sa_partwindows=`blkid ${partwindows} |  sed s/' '/'\n'/g | grep "^TYPE=" | cut -d'"' -f2`
+    sa_partlinux=`blkid ${partlinux} | tr ' ' '\n' | grep "^TYPE=" | cut -d'"' -f2`
+    sa_partwindows=`blkid ${partwindows} | tr ' ' '\n' | grep "^TYPE=" | cut -d'"' -f2`
     
     #Tamanho total das imagens criadas no servidor.
     if [ -e ${img_win} ]; then
@@ -36,7 +36,7 @@ carregar_variaveis() {
         tamlinux=`du ${img_lin} | cut -f1`
     fi
     #UUID da partição linux.
-    linuxUUID=`blkid ${partlinux} | sed s/' '/'\n'/g | grep "^UUID=" | head -n 1 | cut -d'"' -f2`  
+    linuxUUID=`blkid ${partlinux} | tr ' ' '\n' | grep "^UUID=" | head -n 1 | cut -d'"' -f2`  
 }
 
 #Verifica se o servidor está conectado
