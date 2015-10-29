@@ -1,14 +1,15 @@
 #!/bin/bash
 
 #Variáveis do script
-dir_riso=/usr/riso                #diretorio do riso
-dir_img=$dir_riso/imagens        #diretorio da imagem
-img_win=$dir_img/windows.img    #arquivo da imagem do windows
-img_lin=$dir_img/linux.tar        #arquivo da imagem do linux
-tor_win=$img_win.torrent        #torrent da imagem do windows
-tor_lin=$img_lin.torrent        #torrent da imagem do linux
-arq_log=$dir_riso/riso.log        #Arquivo de log
-dir_www=/var/www/html           #Diretório do Apache2
+dir_riso=/usr/riso
+dir_img=$dir_riso/imagens
+img_win=$dir_img/windows.img
+img_lin=$dir_img/linux.tar
+tor_win=$img_win.torrent
+tor_lin=$img_lin.torrent
+dir_www=/var/www/html
+riso_part=$dir_riso/riso.part
+arq_log=$dir_riso/riso.log
 
 #Função de Log
 log(){
@@ -36,7 +37,15 @@ carregar_variaveis() {
         tamlinux=`du ${img_lin} | cut -f1`
     fi
     #UUID da partição linux.
-    linuxUUID=`blkid ${partlinux} | tr ' ' '\n' | grep "^UUID=" | head -n 1 | cut -d'"' -f2`  
+    linuxUUID=`blkid ${partlinux} | tr ' ' '\n' | grep "^UUID=" | head -n 1 | cut -d'"' -f2` 
+    
+    #Atualiza arquivo de variaveis.
+    echo 'partwindows='$partwindows > $riso_part
+    echo 'partlinux='$partlinux >> $riso_part
+    echo 'sa_partwindows='$sa_partwindows >> $riso_part
+    echo 'sa_partlinux='$sa_partlinux >> $riso_part
+    echo 'linuxUUID='$linuxUUID >> $riso_part
+     
 }
 
 #Verifica se o servidor está conectado
@@ -144,7 +153,7 @@ iniciar_servidor_windows() {
 
 #Inicia tracker para disponibilizar imagem do Linux na rede.
 iniciar_servidor_linux() {
-carregar_variaveis;
+	carregar_variaveis;
     if [ -e ${img_lin} ]; then
         if [ -e "${tor_lin}" ]; then
             Linux_IP=`grep "$servidor" ${dir_img}/Linux_IP | wc -l`
@@ -188,7 +197,7 @@ carregar_variaveis;
 
 #Cria imagem do Linux.
 criar_linux() {
-
+	carregar_variaveis;
     log "Criando imagem do Linux."
     echo "Removendo imagem antiga do linux..."
     rm -f ${img_lin}
@@ -231,7 +240,7 @@ cria_torrent_linux() {
 
 #Cria imagem do Windows.
 cria_windows() {
-    
+    carregar_variaveis;
     log "Criando imagem do Windows."
     echo "Removendo imagem antiga do windows..."
     rm -f ${img_win}

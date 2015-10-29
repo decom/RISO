@@ -34,19 +34,19 @@ carregar_variaveis() {
     fi
     
     #UUID
-    linuxUUID=`( tr ' ' '\n' | grep "^linuxUUID=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    linuxUUID=`( tr ' ' '\n' | grep "^\"linuxUUID=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 	
-    partwindows=`( tr ' ' '\n' | grep "^partwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    partlinux=`( tr ' ' '\n' | grep "^partlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    partswap=`( tr ' ' '\n' | grep "^partswap=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    partwindows=`( tr ' ' '\n' | grep "^\"partwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    partlinux=`( tr ' ' '\n' | grep "^\"partlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    partswap=`( tr ' ' '\n' | grep "^\"partswap=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 
     #Tamanho total das imagens criadas no servidor.
-    tamwindows=`( tr ' ' '\n' | grep "^tamwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    tamlinux=`( tr ' ' '\n' | grep "^tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    tamwindows=`( tr ' ' '\n' | grep "^\"tamwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    tamlinux=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 
     #Sistema de arquivo das partições.
-    sa_partwindows=`( tr ' ' '\n' | grep "^tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    sa_partlinux=`( tr ' ' '\n' | grep "^tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    sa_partwindows=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    sa_partlinux=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     
     #Atualiza arquivo de variaveis.
     echo 'partwindows='$partwindows > $riso_part
@@ -253,6 +253,9 @@ baixa_imagem_windows() {
 	#Inicia download da imagen em terminal virtual.
 	log "Inicia o download do torrent do Windows."
 	(wget -O ${tor_win} "http://${servidor}/windows.img.torrent" && log "Download do torrent do Windows finalizado.") || log "ERRO: O torrent do Windows não foi baixado."
+	#Guarda IP de criação do Torrent
+    echo $servidor > $dir_img/Windows_IP
+     
 	cd $dir_img
 	log "Iniciando Download do Windows."
 
@@ -298,6 +301,9 @@ baixa_imagem_linux() {
     #Inicia download da imagen em terminal virtual.
 	log "Baixando torrent do Linux."
 	(wget -O ${tor_lin} "http://${servidor}/linux.tar.torrent" && log "Torrent do Linux baixado com sucesso.") || log "ERRO: Erro ao baixar torrent do Linux."
+	#Guarda IP de criação do Torrent
+    echo $servidor > $dir_img/Linux_IP
+	
 	cd ${dir_img}
 	log "Iniciando download do Linux."
 	rtorrent ${tor_lin} # modificacao retirado o parametrio -d para que a tranferencia seja mostrada, nao e usado o restante do cogigo da funçao
