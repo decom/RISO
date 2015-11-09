@@ -23,7 +23,6 @@ carregar_variaveis() {
     #Pega partições
     partwindows=`os-prober | grep Windows | cut -d':' -f1`
     partlinux=`os-prober | grep linux | cut -d':' -f1`
-    partswap=`blkid | grep swap | grep -v ram | cut -d':' -f1`
     
     #Pega sistema de arquivo das partiçoes.
     sa_partlinux=`blkid ${partlinux} | tr ' ' '\n' | grep "^TYPE=" | cut -d'"' -f2`
@@ -338,7 +337,6 @@ criar_riso_service() {
     echo "    <txt-record>tamwindows=${tamwindows}</txt-record>" >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
     echo '    <!--Localização dos sistemas operacionais no HD-->' >> /etc/avahi/services/riso.service
-    echo "    <txt-record>partswap=${partswap}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>partlinux=${partlinux}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>partwindows=${partwindows}</txt-record>" >> /etc/avahi/services/riso.service
        echo '' >> /etc/avahi/services/riso.service

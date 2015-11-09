@@ -38,15 +38,14 @@ carregar_variaveis() {
 	
     partwindows=`( tr ' ' '\n' | grep "^\"partwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     partlinux=`( tr ' ' '\n' | grep "^\"partlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    partswap=`( tr ' ' '\n' | grep "^\"partswap=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 
     #Tamanho total das imagens criadas no servidor.
     tamwindows=`( tr ' ' '\n' | grep "^\"tamwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     tamlinux=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 
     #Sistema de arquivo das partições.
-    sa_partwindows=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    sa_partlinux=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    sa_partwindows=`( tr ' ' '\n' | grep "^\"sa_partwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
+    sa_partlinux=`( tr ' ' '\n' | grep "^\"sa_partlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     
     #Atualiza arquivo de variaveis.
     echo 'partwindows='$partwindows > $riso_part
@@ -61,7 +60,6 @@ carregar_variaveis() {
     log "$linuxUUID"
     log "$partwindows"
     log "$partlinux"
-    log "$partswap"
     log "$sa_partwindows"
     log "$sa_partlinux"
     log "Variáveis carregadas"
