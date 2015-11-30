@@ -9,7 +9,7 @@ O RISO foi feito para recuperar até 2 sistemas ao mesmo tempo, 1 Linux e 1 Wind
 
 INSTALAÇÃO:
 
-Dentro da pasta do RISO digite './install.sh'
+Execute o script 'install.sh' de dentro da pasta RISO.
 
 UTILIZAÇÃO:
 
