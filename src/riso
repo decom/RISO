@@ -84,7 +84,7 @@ instalar() {
 
 
 	    #Clona linux.
-	    mkfs.${sa_partlinux} $partlinux
+	    mkfs.${sa_partlinux} -qF $partlinux
 	    mount $partlinux /mnt
 	    cd /mnt
 	    log "Instalação do Linux iniciada."
@@ -98,6 +98,7 @@ instalar() {
 
             #Correção UUID partição Linux
 	    tune2fs $partlinux -U $linuxUUID
+      grub-install /dev/sda
 	    update-grub
 
 	    #verifica se desliga computador
@@ -141,6 +142,7 @@ instalar_windows() {
 	    (ntfsclone -r $img_win -O $partwindows && log "Fim da instalação do Windows") || log "ERRO: Windows não instalou com sucesso."
 
 	    log "Instalação do Windows finalizada."
+      grub-install /dev/sda
 	    update-grub
 
 	    #verifica se desliga computador
@@ -180,7 +182,7 @@ instalar_linux() {
 	    umount $partlinux 2> /dev/null
 
 	    #clona linux
-	    mkfs.${sa_partlinux} $partlinux
+	    mkfs.${sa_partlinux} -qF $partlinux
 	    mount $partlinux /mnt
 	    cd /mnt
 	    log "Instalação do Linux iniciada."
