@@ -14,13 +14,13 @@ arq_log=$dir_riso/riso.log
 #Função de Log
 log(){
     [ -e $arq_log ] || touch $arq_log
-    echo `date +"%F %H:%M:%S"` "RISO: $*" >> $arq_log 
+    echo `date +"%F %H:%M:%S"` "RISO: $*" >> $arq_log
 }
 
 #Carrega variaveis disponibilizadas pelo avahi para variáveis do sistema.
 carregar_variaveis() {
 
-    avahi_saida=`avahi-browse -rtp _DECOM_RISO._tcp | grep 'IPv4' | grep '=' | cut -d';' -f10`
+    avahi_saida=`avahi-browse -rtp _DECOM_RISO._tcp | grep '=' | head -n 1 | cut -d';' -f10`
 
     servidor=`( tr ' ' '\n' | grep "^\"servidor=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     if [ -z $servidor ]; then
@@ -32,10 +32,10 @@ carregar_variaveis() {
 	    log "ERRO: Servidor não encontrado na rede."
         exit 1
     fi
-    
+
     #UUID
     linuxUUID=`( tr ' ' '\n' | grep "^\"linuxUUID=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-	
+
     partwindows=`( tr ' ' '\n' | grep "^\"partwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     partlinux=`( tr ' ' '\n' | grep "^\"partlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
 
@@ -46,7 +46,7 @@ carregar_variaveis() {
     #Sistema de arquivo das partições.
     sa_partwindows=`( tr ' ' '\n' | grep "^\"sa_partwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     sa_partlinux=`( tr ' ' '\n' | grep "^\"sa_partlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    
+
     #Atualiza arquivo de variaveis.
     echo 'partwindows='$partwindows > $riso_part
     echo 'partlinux='$partlinux >> $riso_part
@@ -70,10 +70,10 @@ carregar_variaveis() {
 instalar() {
     log "Iniciando instalação do Windows e do Linux."
     if [ -e ${img_win} -a -e ${img_lin} ]; then
-    
+
         #Carrega variáveis
         . $riso_part
-    
+
 	    #Desmonta partiçoes.
 	    umount $partwindows 2> /dev/null
 	    umount $partlinux 2> /dev/null
@@ -81,32 +81,33 @@ instalar() {
 	    #Clona windows.
 	    log "Instalação do Windows iniciada."
 	    (ntfsclone -r $img_win -O $partwindows && log "Fim da instalação do Windows") || log "ERRO: Windows não foi instalado com sucesso."
-	    
+
 
 	    #Clona linux.
-	    mkfs.${sa_partlinux} $partlinux
+	    mkfs.${sa_partlinux} -qF $partlinux
 	    mount $partlinux /mnt
 	    cd /mnt
 	    log "Instalação do Linux iniciada."
-	    rm -f boot/grub/grub.cfg 
+	    rm -f boot/grub/grub.cfg
 	    (tar -xvf $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux não foi instalado com sucesso."
 	    cd ..
 	    umount /mnt 2> /dev/null
-	    
+
 	    sleep 3
 	    log "Instalação do Windows e do Linux finalizada."
-            
+
             #Correção UUID partição Linux
 	    tune2fs $partlinux -U $linuxUUID
+      grub-install /dev/sda
 	    update-grub
-	
+
 	    #verifica se desliga computador
 	    desligar=`grep "DESLIGAR" ${riso_conf} | cut -d'=' -f2`
 	    if [ "$desligar" = "SIM" ]; then
 		log "Desligando computador."
 	        halt
 	    fi
-	
+
 	    #verifica se reinicia computador
 	    reiniciar=`grep "REINICIAR" ${riso_conf} | cut -d'=' -f2`
 	    if [ "$reiniciar" = "SIM" ]; then
@@ -121,35 +122,36 @@ instalar() {
 		7 40
 		log "ERRO: Não existem imagens prontas."
 		return 5
-	fi    
-	
+	fi
+
 }
 
 #Instala imagem do Windows.
 instalar_windows() {
     log "Iniciando instalação do Windows."
     if [ -e ${img_win} ]; then
-    
+
         #le do arquivo de variaveis
-        . $riso_part  
-        
+        . $riso_part
+
 	    #Desmonta partiçoes
 	    umount $partwindows 2> /dev/null
 
 	    #Clona windows
 	    log "Instalação do Windows iniciada."
 	    (ntfsclone -r $img_win -O $partwindows && log "Fim da instalação do Windows") || log "ERRO: Windows não instalou com sucesso."
-	
+
 	    log "Instalação do Windows finalizada."
+      grub-install /dev/sda
 	    update-grub
-	
+
 	    #verifica se desliga computador
 	    desligar=`grep "DESLIGAR" ${riso_conf} | cut -d'=' -f2`
 	    if [ "$desligar" = "SIM" ]; then
 		log "Desligando computador."
 	        halt
 	    fi
-	
+
 	    #verifica se reinicia computador
 	    reiniciar=`grep "REINICIAR" ${riso_conf} | cut -d'=' -f2`
 	    if [ "$reiniciar" = "SIM" ]; then
@@ -165,30 +167,30 @@ instalar_windows() {
 		log "ERRO: Imagem do Windows ainda não foi baixada."
 		return 5
 	fi
-	    
+
 }
 
 #Instala imagem do Linux.
 instalar_linux() {
     log "Iniciando instalação do Linux."
     if [ -e ${img_lin} ]; then
-    
+
        #Carrega variáveis
        . $riso_part
-    
+
 		#desmonta partiçoes.
 	    umount $partlinux 2> /dev/null
 
 	    #clona linux
-	    mkfs.${sa_partlinux} $partlinux
+	    mkfs.${sa_partlinux} -qF $partlinux
 	    mount $partlinux /mnt
 	    cd /mnt
 	    log "Instalação do Linux iniciada."
-	    rm -f boot/grub/grub.cfg 
+	    rm -f boot/grub/grub.cfg
 	    (tar -xvf $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux instalou com sucesso."
 	    cd ..
 	    umount /mnt 2> /dev/null
-	    
+
 	    sleep 3
 	    log "Instalação do Linux finalizada."
 
@@ -196,14 +198,14 @@ instalar_linux() {
 	    tune2fs $partlinux -U $linuxUUID
 	    update-grub
 
-	    
+
 	    #verifica se desliga computador
 	    desligar=`grep "DESLIGAR" ${riso_conf} | cut -d'=' -f2`
 	    if [ "$desligar" = "SIM" ]; then
 		log "Desligando computador."
 	        halt
 	    fi
-	
+
 	    #verifica se reinicia computador
 	    reiniciar=`grep "REINICIAR" ${riso_conf} | cut -d'=' -f2`
 	    if [ "$reiniciar" = "SIM" ]; then
@@ -219,7 +221,7 @@ instalar_linux() {
 		log "Imagem do Linux ainda não foi baixada."
 		return 5
 	fi
-  
+
 }
 
 #Baixa imagem do Windows.
@@ -253,7 +255,7 @@ baixa_imagem_windows() {
 	(wget -O ${tor_win} "http://${servidor}/windows.img.torrent" && log "Download do torrent do Windows finalizado.") || log "ERRO: O torrent do Windows não foi baixado."
 	#Guarda IP de criação do Torrent
     echo $servidor > $dir_img/Windows_IP
-     
+
 	cd $dir_img
 	log "Iniciando Download do Windows."
 
@@ -266,7 +268,7 @@ baixa_imagem_windows() {
         sleep 3
         reset
 
-	
+
 }
 
 #Baixa imagem linux.
@@ -275,7 +277,7 @@ baixa_imagem_linux() {
 	log "Iniciando download do Linux."
 	echo "Conectando ao servidor..."
 	carregar_variaveis || return 1
-	
+
     #Vefifica se imagem já é a mais recente
 	sizeloclin="0"
 	[ -e ${img_lin} ] && sizeloclin=$(du ${img_lin} | cut -f1)
@@ -301,7 +303,7 @@ baixa_imagem_linux() {
 	(wget -O ${tor_lin} "http://${servidor}/linux.tar.torrent" && log "Torrent do Linux baixado com sucesso.") || log "ERRO: Erro ao baixar torrent do Linux."
 	#Guarda IP de criação do Torrent
     echo $servidor > $dir_img/Linux_IP
-	
+
 	cd ${dir_img}
 	log "Iniciando download do Linux."
 	rtorrent ${tor_lin} # modificacao retirado o parametrio -d para que a tranferencia seja mostrada, nao e usado o restante do cogigo da funçao
@@ -325,7 +327,7 @@ configuracoes() {
     if [ "$?" -eq "0" ]; then
 		log "Iniciando configuração manual do arquivo de configuração."
 		nano $riso_conf
-		log "Finalizada a edição manual do arquivo de configuração."		
+		log "Finalizada a edição manual do arquivo de configuração."
 	fi
 
 }
@@ -365,7 +367,7 @@ creditos() {
 		          www.decom.cefetmg.br           \n
 		                                         \n'\
 		  0 0
-		  
+
 }
 
 #Checklist de seleção.
@@ -384,7 +386,7 @@ menu_instalar_imagens() {
 		"Linux") instalar_linux;;
 		"Windows Linux") instalar;;
 	esac
-	
+
 }
 
 #Checklist de seleção.
@@ -403,7 +405,7 @@ menu_baixar_imagens() {
 		"Linux") baixa_imagem_linux && instalar_linux;;
 		"Windows Linux") baixa_imagem_linux && baixa_imagem_windows && instalar;;
 	esac
-	
+
 }
 
 #Menu principal.
@@ -422,10 +424,10 @@ menu() {
 			3 'Configurações'                                   \
 			4 'Créditos'                                        \
 			5 'Ajuda'                                            )
-	
+
 		# ESC, sai do programa...
 		[ $? -ne 0 ] && break
-	
+
 		# De acordo com a opção escolhida, executa funçao
 		case $opcao in
 		1) menu_instalar_imagens;;
@@ -433,10 +435,10 @@ menu() {
 		3) configuracoes;;
 		4) creditos;;
 		5) ajuda;;
-	esac	
+	esac
 
 	done
-	
+
 }
 
 #Avalia argumentos.
@@ -470,7 +472,7 @@ avaliar_args() {
 		exit
 	#Tenta executar
 	else
-		#Verifica syntax 
+		#Verifica syntax
 		for i in $(seq 1 ${argumento[0]}); do
 			if [ ${argumento[$i]} = "--baixar" ]; then
 				until [ $i -eq ${argumento[0]} -o ${argumento[$i]} = "--instalar" ]; do
@@ -500,7 +502,7 @@ avaliar_args() {
 				exit
 			fi
 		done
-		
+
 		#Executa comando
 		carregar_variaveis || return 1
 		for i in $(seq 1 ${argumento[0]}); do
@@ -528,7 +530,7 @@ avaliar_args() {
 		done
 	fi
 	reboot
-	
+
 }
 
 #Verifica se usuário é root antes de iniciar o risos.
