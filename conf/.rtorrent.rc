@@ -1,3 +1,23 @@
+# Maximum and minimum number of peers to connect to per torrent.
+# min_peers = 1
+# max_peers = 30
+
+# Port range to use for listening.
+port_range = 60125-64125
+
+# Start opening ports at a random position within the port range.
+port_random = yes
+
+# Check hash for finished torrents. Might be usefull until the bug is
+# fixed that causes lack of diskspace not to be properly reported.
+check_hash = no
+
+# encryption = allow_incoming,enable_retry,prefer_plaintext
+encryption = allow_incoming,try_outgoing,enable_retry
+
+# Enable peer exchange (for torrents not marked private)
+peer_exchange = yes
+
 system.method.set_key=event.download.finished,quit,"execute=/usr/riso/quitRTorrent.sh,$d.get_base_path="
 set_max_file_size=374877906944
 max_memory_usage=3500M
