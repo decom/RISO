@@ -390,7 +390,7 @@ menu_instalar_imagens() {
 }
 
 #Checklist de seleção.
-menu_baixar_imagens() {
+menu_baixar_instalar_imagens() {
 
 	opcao=$( dialog --stdout \
 	--ok-label 'Confirmar'   \
@@ -408,6 +408,36 @@ menu_baixar_imagens() {
 
 }
 
+menu_baixar_imagens() {
+
+	opcao=$( dialog --stdout \
+	--ok-label 'Confirmar'   \
+	--checklist 'Quais imagens deseja baixar:' \
+	0 0 0 \
+	Windows '' ON  \
+	Linux '' ON )
+
+	# De acordo com a opção escolhida, executa funcoes
+	case $opcao in
+		"Windows") baixa_imagem_windows && dialog \
+        --title 'Sucesso' \
+        --ok-label 'OK' \
+        --msgbox 'Imagem Windows baixada com sucesso.' \
+        0 0;;
+		"Linux") baixa_imagem_linux && dialog \
+        --title 'Sucesso' \
+        --ok-label 'OK' \
+        --msgbox 'Imagem Linux baixada.' \
+        0 0;;
+		"Windows Linux") baixa_imagem_linux && baixa_imagem_windows && dialog \
+        --title 'Sucesso' \
+        --ok-label 'OK' \
+        --msgbox 'Imagens Windows e Linux baixadas com sucesso.' \
+        0 0;;
+	esac
+
+}
+
 #Menu principal.
 menu() {
 
@@ -421,9 +451,10 @@ menu() {
 			0 0 0                                               \
 			1 'Instalar imagens já existentes'                  \
 			2 'Baixar e instalar novas imagens'                 \
-			3 'Configurações'                                   \
-			4 'Créditos'                                        \
-			5 'Ajuda'                                            )
+			3 'Baixar novas imagens'                            \
+			4 'Configurações'                                   \
+			5 'Créditos'                                        \
+			6 'Ajuda'                                            )
 
 		# ESC, sai do programa...
 		[ $? -ne 0 ] && break
@@ -431,10 +462,11 @@ menu() {
 		# De acordo com a opção escolhida, executa funçao
 		case $opcao in
 		1) menu_instalar_imagens;;
-		2) menu_baixar_imagens;;
-		3) configuracoes;;
-		4) creditos;;
-		5) ajuda;;
+		2) menu_baixar_instalar_imagens;;
+		3) menu_baixar_imagens;;
+		4) configuracoes;;
+		5) creditos;;
+		6) ajuda;;
 	esac
 
 	done
