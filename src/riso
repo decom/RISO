@@ -7,6 +7,7 @@ img_win=$dir_img/windows.img
 img_lin=$dir_img/linux.tar
 tor_win=$img_win.torrent
 tor_lin=$img_lin.torrent
+tor_dados=$dir_img/dados.torrent
 riso_conf=$dir_riso/riso.conf
 riso_part=$dir_riso/riso.part
 arq_log=$dir_riso/riso.log
@@ -317,6 +318,44 @@ baixa_imagem_linux() {
 
 }
 
+#Baixa imagem linux.
+baixar_dados() {
+
+	log "Iniciando download da partição de dados."
+	echo "Conectando ao servidor..."
+	carregar_variaveis || return 1
+
+
+	#Deleta imagens antigas.
+	log "Formatando partição de dados"
+	echo "Formatando partição de dados..."
+	rm -f ${tor_dados}
+	umount /mnt 2> /dev/null
+	umount /dev/sda5 2> /dev/null
+	
+	mkfs.ntfs -fFq -L 'Dados' /dev/sda5 && 	log "Partição de dados formatada."
+	mount /dev/sda5 /mnt
+	
+	log "Baixando torrent da partição de dados."
+	(wget -O ${tor_dados} "http://${servidor}/dados.torrent" && log "Torrent da partição de dados baixado com sucesso.") || log "ERRO: Erro ao baixar torrent da partição de dados."
+  echo $servidor > $dir_img/Dados_IP
+
+	cd /mnt/
+	log "Iniciando download da partição de dados."
+	
+	rtorrent ${tor_dados} 
+
+  trap "killall rtorrent; clear; exit" 2 15
+  
+  cd ${dir_img}
+  umount /mnt 2> /dev/null
+	umount /dev/sda5 2> /dev/null
+  echo "Download da partição de dados finalizada"
+  sleep 3
+  reset
+
+}
+
 #Define configurações do riso
 configuracoes() {
     dialog                                          \
@@ -452,9 +491,10 @@ menu() {
 			1 'Instalar imagens já existentes'                  \
 			2 'Baixar e instalar novas imagens'                 \
 			3 'Baixar novas imagens'                            \
-			4 'Configurações'                                   \
-			5 'Créditos'                                        \
-			6 'Ajuda'                                            )
+			4 'Baixar partição de dados'
+			5 'Configurações'                                   \
+			6 'Créditos'                                        \
+			7 'Ajuda'                                            )
 
 		# ESC, sai do programa...
 		[ $? -ne 0 ] && break
@@ -464,9 +504,10 @@ menu() {
 		1) menu_instalar_imagens;;
 		2) menu_baixar_instalar_imagens;;
 		3) menu_baixar_imagens;;
-		4) configuracoes;;
-		5) creditos;;
-		6) ajuda;;
+		4) baixar_dados;;
+		5) configuracoes;;
+		6) creditos;;
+		7) ajuda;;
 	esac
 
 	done
