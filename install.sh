@@ -47,7 +47,9 @@ instalar() {
     echo 'GRUB_DISTRIBUTOR=Recovery' >> /etc/default/grub
     sed /'GRUB_TIMEOUT='/d -i /etc/default/grub
     echo 'GRUB_TIMEOUT=-1' >> /etc/default/grub
+    sed /'GRUB_DISABLE_LINUX_UUID='/d -i /etc/default/grub
     echo 'GRUB_DISABLE_LINUX_UUID=true' >> /etc/default/grub
+    sed /'GRUB_DISABLE_LINUX_RECOVERY='/d -i /etc/default/grub
     echo 'GRUB_DISABLE_LINUX_RECOVERY="true"' >> /etc/default/grub
     rm -f /etc/grub.d/20_memtest86+
     if [ -e /etc/grub.d/10_linux ]; then
