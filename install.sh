@@ -31,7 +31,6 @@ instalar() {
     cp ./src/quitRTorrent.sh /usr/riso/quitRTorrent.sh
     chmod +x /usr/riso/quitRTorrent.sh
     chmod +x /usr/riso/riso
-    cp ./conf/riso.conf /usr/riso/riso.conf
     cp ./conf/.rtorrent.rc /root
     cp ./src/risos /usr/riso/risos
     chmod +x /usr/riso/risos
