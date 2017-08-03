@@ -17,16 +17,18 @@ log(){
     echo `date +"%F %H:%M:%S"` "RISOS: $*" >> $arq_log 
 }
 
-#Carrega variaveis do arquivo riso.service para variáveis do sistema.
+#Carrega variaveis que serão utilizadas no arquivo riso.service.
 carregar_variaveis() {
     
-    #Pega partições
-    partwindows=`os-prober | grep Windows | cut -d':' -f1`
-    partlinux=`os-prober | grep linux | cut -d':' -f1`
+    #Partições
+    partefi="/dev/sda6"
+    partwindows="/dev/sda2"
+    partlinux="/dev/sda3"
     
-    #Pega sistema de arquivo das partiçoes.
+    #Sistemas de arquivos
+    sa_partwindows=`blkid ${partwindows} | tr ' ' '\n' | grep "^TYPE=" | cut -d'"' -f2` 
     sa_partlinux=`blkid ${partlinux} | tr ' ' '\n' | grep "^TYPE=" | cut -d'"' -f2`
-    sa_partwindows=`blkid ${partwindows} | tr ' ' '\n' | grep "^TYPE=" | cut -d'"' -f2`
+
     
     #Tamanho total das imagens criadas no servidor.
     if [ -e ${img_win} ]; then
@@ -35,7 +37,10 @@ carregar_variaveis() {
     if [ -e ${img_lin} ]; then
         tamlinux=`du ${img_lin} | cut -f1`
     fi
-    #UUID da partição linux.
+
+    #UUID das partições
+    efiUUID=`blkid ${partefi} | tr ' ' '\n' | grep "^UUID=" | head -n 1 | cut -d'"' -f2`
+    windowsUUID=`blkid ${partwindows} | tr ' ' '\n' | grep "^UUID=" | head -n 1 | cut -d'"' -f2` 
     linuxUUID=`blkid ${partlinux} | tr ' ' '\n' | grep "^UUID=" | head -n 1 | cut -d'"' -f2` 
     
     #Atualiza arquivo de variaveis.
@@ -43,6 +48,8 @@ carregar_variaveis() {
     echo 'partlinux='$partlinux >> $riso_part
     echo 'sa_partwindows='$sa_partwindows >> $riso_part
     echo 'sa_partlinux='$sa_partlinux >> $riso_part
+    echo 'efiUUID='$efiUUID >> $riso_part
+    echo 'windowsUUID='$windowsUUID >> $riso_part
     echo 'linuxUUID='$linuxUUID >> $riso_part
      
 }
@@ -67,7 +74,7 @@ iniciar_servidor() {
     if [ -e ${img_win} -a -e ${img_lin} ]; then
         if [ -e "${tor_lin}" -a -e "${tor_win}" ]; then
             Windows_IP=`grep "$servidor" ${dir_img}/Windows_IP | wc -l`
-               Linux_IP=`grep "$servidor" ${dir_img}/Linux_IP | wc -l`
+            Linux_IP=`grep "$servidor" ${dir_img}/Linux_IP | wc -l`
                if [[ 1 -eq $Windows_IP && 1 -eq $Linux_IP ]]; then
                 criar_riso_service;
                 cp "${tor_lin}" "${tor_win}" "${dir_www}"
