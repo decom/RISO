@@ -4,7 +4,7 @@
 # Arquivo de instalação do sistema RISO
 # --------------------------------------------------------------------------
 
-dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog findutils grub2 mount ntfs-3g os-prober psmisc rtorrent sed ssh util-linux"
+dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog findutils grub-efi mount ntfs-3g os-prober psmisc rtorrent sed ssh util-linux"
 
 instalar() {
 
@@ -47,8 +47,8 @@ instalar() {
     echo 'GRUB_DISTRIBUTOR=Recovery' >> /etc/default/grub
     sed /'GRUB_TIMEOUT='/d -i /etc/default/grub
     echo 'GRUB_TIMEOUT=-1' >> /etc/default/grub
-    sed s/'#GRUB_DISABLE_LINUX_UUID=false'/'GRUB_DISABLE_LINUX_UUID=true'/g -i /etc/default/grub
-    sed s/'#GRUB_DISABLE_LINUX_RECOVERY="false"'/'GRUB_DISABLE_LINUX_RECOVERY="true"'/g -i /etc/default/grub
+    echo 'GRUB_DISABLE_LINUX_UUID=true' >> /etc/default/grub
+    echo 'GRUB_DISABLE_LINUX_RECOVERY="true"' >> /etc/default/grub
     rm -f /etc/grub.d/20_memtest86+
     if [ -e /etc/grub.d/10_linux ]; then
         mv /etc/grub.d/10_linux /etc/grub.d/50_linux
