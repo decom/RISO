@@ -4,7 +4,7 @@
 # Arquivo de instalação do sistema RISO
 # --------------------------------------------------------------------------
 
-dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog findutils grub-efi mount ntfs-3g os-prober psmisc rtorrent sed ssh util-linux"
+dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog findutils grub-efi mount net-tools ntfs-3g os-prober psmisc rtorrent sed ssh util-linux"
 
 instalar() {
 
