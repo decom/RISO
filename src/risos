@@ -59,6 +59,7 @@ iniciar_servidor() {
                 criar_riso_service;
                 cp "${tor_lin}" "${tor_win}" "${dir_www}"
                 cp "${img_efi}" "${dir_www}"
+                cp "${riso_cfg}" "${dir_www}"
                 log "Tracker iniciado para Windows e Linux."
                 bttrack --port 6969 --dfile dstate > /dev/null &
                 cd ${dir_img}    
@@ -104,6 +105,7 @@ iniciar_servidor_windows() {
                 criar_riso_service;
                 cp "${tor_win}" "${dir_www}"
                 cp "${img_efi}" "${dir_www}"
+                cp "${riso_cfg}" "${dir_www}"
                 log "Tracker iniciado para Windows."
                 bttrack --port 6969 --dfile dstate > /dev/null &
                 cd ${dir_img}    
@@ -149,6 +151,7 @@ iniciar_servidor_linux() {
                 criar_riso_service;
                 cp "${tor_lin}" "${dir_www}"
                 cp "${img_efi}" "${dir_www}"
+                cp "${riso_cfg}" "${dir_www}"
                 log "Tracker iniciado para Linux."
                 bttrack --port 6969 --dfile dstate > /dev/null &
                 cd ${dir_img}    
@@ -329,26 +332,10 @@ criar_riso_service() {
     echo '' >> /etc/avahi/services/riso.service
     echo '    <!--Ip do servidor-->' >> /etc/avahi/services/riso.service # modifiçaco para guarda o ip do servidor
     echo "    <txt-record>servidor=$servidor</txt-record>" >> /etc/avahi/services/riso.service #
-    echo '' >> /etc/avahi/services/riso.service #
-    echo '    <!--Variáveis com sistema de arquivo das partições-->' >> /etc/avahi/services/riso.service
-    echo "    <txt-record>sa_partrecovery=${sa_partrecovery}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>sa_partwindows=${sa_partwindows}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>sa_partlinux=${sa_partlinux}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>sa_partdados=${sa_partdados}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>sa_partswap=${sa_partswap}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>sa_partefi=${sa_partefi}</txt-record>" >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
     echo '    <!--Variáveis com tamanho das imagens geradas no servidor-->' >> /etc/avahi/services/riso.service
     echo "    <txt-record>tamlinux=${tamlinux}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>tamwindows=${tamwindows}</txt-record>" >> /etc/avahi/services/riso.service
-    echo '' >> /etc/avahi/services/riso.service
-    echo '    <!--UUID das partições-->' >> /etc/avahi/services/riso.service
-    echo "    <txt-record>partrecovery=${partrecovery}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>partwindows=${partwindows}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>partlinux=${partlinux}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>partdados=${partdados}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>partswap=${partswap}</txt-record>" >> /etc/avahi/services/riso.service
-    echo "    <txt-record>partefi=${partefi}</txt-record>" >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
     echo '  </service>' >> /etc/avahi/services/riso.service
     echo '</service-group>' >> /etc/avahi/services/riso.service

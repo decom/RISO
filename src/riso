@@ -4,11 +4,11 @@
 dir_riso=/usr/riso
 dir_img=$dir_riso/imagens
 img_win=$dir_img/windows.img
-img_lin=$dir_img/linux.tar
+img_lin=$dir_img/linux.tar.bz2
+img_efi=$dir_img/efi.tar.bz2
 tor_win=$img_win.torrent
 tor_lin=$img_lin.torrent
-riso_conf=$dir_riso/riso.conf
-riso_part=$dir_riso/riso.part
+riso_cfg=$dir_riso/riso.cfg
 arq_log=$dir_riso/riso.log
 
 #Função de Log
@@ -33,87 +33,79 @@ carregar_variaveis() {
         exit 1
     fi
 
-    #UUID
-    linuxUUID=`( tr ' ' '\n' | grep "^\"linuxUUID=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-
-    partwindows=`( tr ' ' '\n' | grep "^\"partwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    partlinux=`( tr ' ' '\n' | grep "^\"partlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-
+    #Log
+    log "Carregando variáveis"
+       
     #Tamanho total das imagens criadas no servidor.
     tamwindows=`( tr ' ' '\n' | grep "^\"tamwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
     tamlinux=`( tr ' ' '\n' | grep "^\"tamlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-
-    #Sistema de arquivo das partições.
-    sa_partwindows=`( tr ' ' '\n' | grep "^\"sa_partwindows=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-    sa_partlinux=`( tr ' ' '\n' | grep "^\"sa_partlinux=" | cut -d'=' -f2 | cut -d'"' -f1) <<< $avahi_saida`
-
-    #Atualiza arquivo de variaveis.
-    echo 'partwindows='$partwindows > $riso_part
-    echo 'partlinux='$partlinux >> $riso_part
-    echo 'sa_partwindows='$sa_partwindows >> $riso_part
-    echo 'sa_partlinux='$sa_partlinux >> $riso_part
-    echo 'linuxUUID='$linuxUUID >> $riso_part
-
-    #Log
-    log "Carregando variáveis"
-    log "$servidor"
-    log "$linuxUUID"
-    log "$partwindows"
-    log "$partlinux"
-    log "$sa_partwindows"
-    log "$sa_partlinux"
+    
+    wget -O ${riso_cfg} "http://${servidor}/riso.cfg"
+    
+    source $riso_cfg
+    
     log "Variáveis carregadas"
 
 }
 
+instalar_efi(){
+# Formata a partição EFI, trocando o UUID
+    if [ -e ${img_efi} ]; then
+        umount /dev/disk/by-uuid/$partefi 2> /dev/null
+        mkfs.${sa_partefi} -F 32 -i `echo $partefi | tr -d -` /dev/disk/by-uuid/$partefi
+        mount /dev/disk/by-uuid/$partefi /mnt
+        cd /mnt
+        log "Instalação da EFI iniciada."
+        (tar -xvfj $img_efi && log "Fim da instalação da EFI.") || log "ERRO: EFI não foi instalada com sucesso."
+        cd ..
+        umount /mnt 2> /dev/null
+    else
+        dialog \
+            --title 'Atenção' \
+            --ok-label 'OK' \
+            --msgbox '\n  Você ainda não baixou a imagem EFI.' \
+            7 50
+            log "ERRO: Imagem EFI ainda não foi baixada."
+            return 5
+	fi
+}
+
+
+
 #Instala imagens do Linux e do Windows.
 instalar() {
     log "Iniciando instalação do Windows e do Linux."
+    instalar_efi
     if [ -e ${img_win} -a -e ${img_lin} ]; then
 
         #Carrega variáveis
-        . $riso_part
+        source $riso_cfg
 
 	    #Desmonta partiçoes.
-	    umount $partwindows 2> /dev/null
-	    umount $partlinux 2> /dev/null
+	    umount /dev/disk/by-uuid/$partwindows 2> /dev/null
+	    umount /dev/disk/by-uuid/$partlinux 2> /dev/null
 
 	    #Clona windows.
 	    log "Instalação do Windows iniciada."
-	    (ntfsclone -r $img_win -O $partwindows && log "Fim da instalação do Windows") || log "ERRO: Windows não foi instalado com sucesso."
+	    (ntfsclone -r $img_win -O /dev/disk/by-uuid/$partwindows && log "Fim da instalação do Windows") || log "ERRO: Windows não foi instalado com sucesso."
 
 
 	    #Clona linux.
-	    mkfs.${sa_partlinux} -qF $partlinux
-	    mount $partlinux /mnt
+	    mkfs.${sa_partlinux} -qF -U $partlinux /dev/disk/by-uuid/$partlinux
+	    mount /dev/disk/by-uuid/$partlinux /mnt
 	    cd /mnt
 	    log "Instalação do Linux iniciada."
-	    rm -f boot/grub/grub.cfg
-	    (tar -xvf $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux não foi instalado com sucesso."
+	    (tar -xvfj $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux não foi instalado com sucesso."
 	    cd ..
 	    umount /mnt 2> /dev/null
 
 	    sleep 3
 	    log "Instalação do Windows e do Linux finalizada."
 
-            #Correção UUID partição Linux
-	    tune2fs $partlinux -U $linuxUUID
-      grub-install /dev/sda
 	    update-grub
 
-	    #verifica se desliga computador
-	    desligar=`grep "DESLIGAR" ${riso_conf} | cut -d'=' -f2`
-	    if [ "$desligar" = "SIM" ]; then
-		log "Desligando computador."
-	        halt
-	    fi
-
-	    #verifica se reinicia computador
-	    reiniciar=`grep "REINICIAR" ${riso_conf} | cut -d'=' -f2`
-	    if [ "$reiniciar" = "SIM" ]; then
-		log "Reiniciando computador."
-	        reboot
-	    fi
+        reboot
+	   
 	else
 		dialog \
 		--title 'Atenção' \
@@ -129,35 +121,22 @@ instalar() {
 #Instala imagem do Windows.
 instalar_windows() {
     log "Iniciando instalação do Windows."
+    instalar_efi
     if [ -e ${img_win} ]; then
 
         #le do arquivo de variaveis
-        . $riso_part
+        source $riso_cfg
 
 	    #Desmonta partiçoes
-	    umount $partwindows 2> /dev/null
+	    umount /dev/disk/by-uuid/$partwindows 2> /dev/null
 
 	    #Clona windows
 	    log "Instalação do Windows iniciada."
-	    (ntfsclone -r $img_win -O $partwindows && log "Fim da instalação do Windows") || log "ERRO: Windows não instalou com sucesso."
+	    (ntfsclone -r $img_win -O /dev/disk/by-uuid/$partwindows && log "Fim da instalação do Windows") || log "ERRO: Windows não instalou com sucesso."
 
 	    log "Instalação do Windows finalizada."
-      grub-install /dev/sda
-	    update-grub
-
-	    #verifica se desliga computador
-	    desligar=`grep "DESLIGAR" ${riso_conf} | cut -d'=' -f2`
-	    if [ "$desligar" = "SIM" ]; then
-		log "Desligando computador."
-	        halt
-	    fi
-
-	    #verifica se reinicia computador
-	    reiniciar=`grep "REINICIAR" ${riso_conf} | cut -d'=' -f2`
-	    if [ "$reiniciar" = "SIM" ]; then
-		log "Reiniciando computador."
-	        reboot
-	    fi
+        update-grub
+        reboot
 	else
 		dialog \
 		--title 'Atenção' \
@@ -173,45 +152,29 @@ instalar_windows() {
 #Instala imagem do Linux.
 instalar_linux() {
     log "Iniciando instalação do Linux."
+    instalar_efi
     if [ -e ${img_lin} ]; then
 
        #Carrega variáveis
-       . $riso_part
+       souce $riso_cfg
 
 		#desmonta partiçoes.
-	    umount $partlinux 2> /dev/null
+	    umount /dev/disk/by-uuid/$partlinux 2> /dev/null
 
 	    #clona linux
-	    mkfs.${sa_partlinux} -qF $partlinux
-	    mount $partlinux /mnt
+	    mkfs.${sa_partlinux} -qF -U $partlinux /dev/disk/by-uuid/$partlinux
+	    mount /dev/disk/by-uuid/$partlinux /mnt
 	    cd /mnt
 	    log "Instalação do Linux iniciada."
-	    rm -f boot/grub/grub.cfg
-	    (tar -xvf $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux instalou com sucesso."
+	    (tar -xjvf $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux instalou com sucesso."
 	    cd ..
 	    umount /mnt 2> /dev/null
 
 	    sleep 3
 	    log "Instalação do Linux finalizada."
 
-            #Correção UUID partição Linux
-	    tune2fs $partlinux -U $linuxUUID
 	    update-grub
-
-
-	    #verifica se desliga computador
-	    desligar=`grep "DESLIGAR" ${riso_conf} | cut -d'=' -f2`
-	    if [ "$desligar" = "SIM" ]; then
-		log "Desligando computador."
-	        halt
-	    fi
-
-	    #verifica se reinicia computador
-	    reiniciar=`grep "REINICIAR" ${riso_conf} | cut -d'=' -f2`
-	    if [ "$reiniciar" = "SIM" ]; then
-		log "Reiniciando computador."
-	        reboot
-	    fi
+        reboot
 	else
 		dialog \
 		--title 'Atenção' \
@@ -253,6 +216,8 @@ baixa_imagem_windows() {
 	#Inicia download da imagen em terminal virtual.
 	log "Inicia o download do torrent do Windows."
 	(wget -O ${tor_win} "http://${servidor}/windows.img.torrent" && log "Download do torrent do Windows finalizado.") || log "ERRO: O torrent do Windows não foi baixado."
+	log "Baixando imagem EFI."
+	(wget -O ${img_efi} "http://${servidor}/efi.tar.bz2" && log "Imagem EFI baixada com sucesso.") || log "ERRO: Erro ao baixar imagem EFI."
 	#Guarda IP de criação do Torrent
     echo $servidor > $dir_img/Windows_IP
 
@@ -300,7 +265,9 @@ baixa_imagem_linux() {
 
     #Inicia download da imagen em terminal virtual.
 	log "Baixando torrent do Linux."
-	(wget -O ${tor_lin} "http://${servidor}/linux.tar.torrent" && log "Torrent do Linux baixado com sucesso.") || log "ERRO: Erro ao baixar torrent do Linux."
+	(wget -O ${tor_lin} "http://${servidor}/linux.tar.bz2.torrent" && log "Torrent do Linux baixado com sucesso.") || log "ERRO: Erro ao baixar torrent do Linux."
+	log "Baixando imagem EFI."
+	(wget -O ${img_efi} "http://${servidor}/efi.tar.bz2" && log "Imagem EFI baixada com sucesso.") || log "ERRO: Erro ao baixar imagem EFI."
 	#Guarda IP de criação do Torrent
     echo $servidor > $dir_img/Linux_IP
 
@@ -326,7 +293,7 @@ configuracoes() {
     0 0
     if [ "$?" -eq "0" ]; then
 		log "Iniciando configuração manual do arquivo de configuração."
-		nano $riso_conf
+		nano $riso_cfg
 		log "Finalizada a edição manual do arquivo de configuração."
 	fi
 
