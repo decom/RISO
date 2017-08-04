@@ -4,11 +4,12 @@
 dir_riso=/usr/riso
 dir_img=$dir_riso/imagens
 img_win=$dir_img/windows.img
-img_lin=$dir_img/linux.tar
+img_lin=$dir_img/linux.tar.bz2
+img_efi=$dir_img/efi.tar.bz2
 tor_win=$img_win.torrent
 tor_lin=$img_lin.torrent
 dir_www=/var/www/html
-riso_part=$dir_riso/riso.part
+riso_cfg=$dir_riso/riso.cfg
 arq_log=$dir_riso/riso.log
 
 #Função de Log
@@ -18,17 +19,9 @@ log(){
 }
 
 #Carrega variaveis que serão utilizadas no arquivo riso.service.
-carregar_variaveis() {
-    
-    #Partições
-    partefi="/dev/sda6"
-    partwindows="/dev/sda2"
-    partlinux="/dev/sda3"
-    
-    #Sistemas de arquivos
-    sa_partwindows=`blkid ${partwindows} | tr ' ' '\n' | grep "^TYPE=" | cut -d'"' -f2` 
-    sa_partlinux=`blkid ${partlinux} | tr ' ' '\n' | grep "^TYPE=" | cut -d'"' -f2`
+carregar_variaveis() {    
 
+    source $riso_cfg
     
     #Tamanho total das imagens criadas no servidor.
     if [ -e ${img_win} ]; then
@@ -38,20 +31,7 @@ carregar_variaveis() {
         tamlinux=`du ${img_lin} | cut -f1`
     fi
 
-    #UUID das partições
-    efiUUID=`blkid ${partefi} | tr ' ' '\n' | grep "^UUID=" | head -n 1 | cut -d'"' -f2`
-    windowsUUID=`blkid ${partwindows} | tr ' ' '\n' | grep "^UUID=" | head -n 1 | cut -d'"' -f2` 
-    linuxUUID=`blkid ${partlinux} | tr ' ' '\n' | grep "^UUID=" | head -n 1 | cut -d'"' -f2` 
-    
-    #Atualiza arquivo de variaveis.
-    echo 'partwindows='$partwindows > $riso_part
-    echo 'partlinux='$partlinux >> $riso_part
-    echo 'sa_partwindows='$sa_partwindows >> $riso_part
-    echo 'sa_partlinux='$sa_partlinux >> $riso_part
-    echo 'efiUUID='$efiUUID >> $riso_part
-    echo 'windowsUUID='$windowsUUID >> $riso_part
-    echo 'linuxUUID='$linuxUUID >> $riso_part
-     
+         
 }
 
 #Verifica se o servidor está conectado
@@ -78,6 +58,7 @@ iniciar_servidor() {
                if [[ 1 -eq $Windows_IP && 1 -eq $Linux_IP ]]; then
                 criar_riso_service;
                 cp "${tor_lin}" "${tor_win}" "${dir_www}"
+                cp "${img_efi}" "${dir_www}"
                 log "Tracker iniciado para Windows e Linux."
                 bttrack --port 6969 --dfile dstate > /dev/null &
                 cd ${dir_img}    
@@ -122,6 +103,7 @@ iniciar_servidor_windows() {
                if [ 1 -eq $Windows_IP ]; then
                 criar_riso_service;
                 cp "${tor_win}" "${dir_www}"
+                cp "${img_efi}" "${dir_www}"
                 log "Tracker iniciado para Windows."
                 bttrack --port 6969 --dfile dstate > /dev/null &
                 cd ${dir_img}    
@@ -166,6 +148,7 @@ iniciar_servidor_linux() {
                if [ 1 -eq $Linux_IP ]; then
                 criar_riso_service;
                 cp "${tor_lin}" "${dir_www}"
+                cp "${img_efi}" "${dir_www}"
                 log "Tracker iniciado para Linux."
                 bttrack --port 6969 --dfile dstate > /dev/null &
                 cd ${dir_img}    
@@ -201,6 +184,25 @@ iniciar_servidor_linux() {
     fi
 }
 
+#Cria imagem EFI.
+criar_efi() {
+	carregar_variaveis;
+    log "Criando imagem EFI."
+    echo "Removendo imagem antiga EFI..."
+    rm -f ${img_efi}
+    
+    
+    #Cria arquivo .tar.bz2 EFI
+    umount /mnt 2> /dev/null
+    mount /dev/disk/by-uuid/${partefi} /mnt
+    cd /mnt
+    tar -cvfj ${img_efi} *
+    
+    umount /mnt 2> /dev/null
+    
+    log "Imagem EFI criada."
+}
+
 #Cria imagem do Linux.
 criar_linux() {
 	carregar_variaveis;
@@ -211,17 +213,19 @@ criar_linux() {
     
     #Cria arquivo .tar do linux
     umount /mnt 2> /dev/null
-    mount ${partlinux} /mnt
+    mount /dev/disk/by-uuid/${partlinux} /mnt
     cd /mnt
-    tar -cvf ${img_lin} *
+    tar -cvfj ${img_lin} *
     
     umount /mnt 2> /dev/null
+    
+    criar_efi;
     
     log "Imagem do Linux criada."
 }
 
 #Cria arquivo .torrent para imagem do linux
-cria_torrent_linux() {
+criar_torrent_linux() {
     
     if [ -e $img_lin ]; then
         log "Criando arquivo torrent do linux."
@@ -245,49 +249,40 @@ cria_torrent_linux() {
 }
 
 #Cria imagem do Windows.
-cria_windows() {
+criar_windows() {
     carregar_variaveis;
     log "Criando imagem do Windows."
     echo "Removendo imagem antiga do windows..."
     rm -f ${img_win}
     rm -f ${tor_win}
     
-    #Se estiver usando windows 7. Muda arquivo de boot para não usar mais UUID.
-    windows7=`os-prober | grep "Windows 7"`
-    if [ ! -z "$windows7" ]; then
-        echo "Configurando Windows 7..."
-        umount /mnt 2> /dev/null
-        mount ${partwindows} /mnt
-        cp ${dir_riso}/BCD /mnt/Boot/BCD
-        umount /mnt 2> /dev/null
-    fi
+#Cria arquivo .img do windows
+    umount /dev/disk/by-uuid/${partwindows} 2> /dev/null
+    ntfsclone -s -O ${img_win} /dev/disk/by-uuid/${partwindows}
     
-
-    #Cria arquivo .img do windows
-    umount ${partwindows} 2> /dev/null
-    ntfsclone -s -O ${img_win} ${partwindows}
-    
-    #Se não conseguiu criar a imagem
+#Se não conseguiu criar a imagem
     if [ "$?" -ne "0" ]; then
         dialog \
         --title 'Atenção' \
         --ok-label 'OK' \
         --msgbox 'Não consegui criar uma imagem do Windows.\n
 O sistema operacional pode ainda não ter sido instalado.\n
-A partição ou o sistema de arquivo indicados pelas variáveis\n
-partwindows e sa_partwindows em /etc/avahi/services/riso.service\n
+A UUID da partição ou o sistema de arquivo indicados pelas variáveis\n
+partwindows e sa_partwindows em /usr/riso/riso.cfg\n
 pode estar incorreta.\n' \
         0 0
         log "ERRO: Ao criar imagem do Windows, ntfsclone falhou ao criar arquivo windows.img."
         return 3
     fi
+    
+criar_efi;
 
     log "Imagem do Windows criada."
     
 }
 
 #Cria arquivo .torrent para imagem do windows.
-cria_torrent_windows() {
+criar_torrent_windows() {
     
     if [ -e ${img_win} ]; then
         log "Criando arquivo torrent do windows."
@@ -336,19 +331,24 @@ criar_riso_service() {
     echo "    <txt-record>servidor=$servidor</txt-record>" >> /etc/avahi/services/riso.service #
     echo '' >> /etc/avahi/services/riso.service #
     echo '    <!--Variáveis com sistema de arquivo das partições-->' >> /etc/avahi/services/riso.service
-    echo "    <txt-record>sa_partlinux=${sa_partlinux}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>sa_partrecovery=${sa_partrecovery}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>sa_partwindows=${sa_partwindows}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>sa_partlinux=${sa_partlinux}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>sa_partdados=${sa_partdados}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>sa_partswap=${sa_partswap}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>sa_partefi=${sa_partefi}</txt-record>" >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
     echo '    <!--Variáveis com tamanho das imagens geradas no servidor-->' >> /etc/avahi/services/riso.service
     echo "    <txt-record>tamlinux=${tamlinux}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>tamwindows=${tamwindows}</txt-record>" >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
-    echo '    <!--Localização dos sistemas operacionais no HD-->' >> /etc/avahi/services/riso.service
-    echo "    <txt-record>partlinux=${partlinux}</txt-record>" >> /etc/avahi/services/riso.service
+    echo '    <!--UUID das partições-->' >> /etc/avahi/services/riso.service
+    echo "    <txt-record>partrecovery=${partrecovery}</txt-record>" >> /etc/avahi/services/riso.service
     echo "    <txt-record>partwindows=${partwindows}</txt-record>" >> /etc/avahi/services/riso.service
-       echo '' >> /etc/avahi/services/riso.service
-    echo '    <!--UUID - Partição Linux-->' >> /etc/avahi/services/riso.service
-    echo "    <txt-record>linuxUUID=${linuxUUID}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>partlinux=${partlinux}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>partdados=${partdados}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>partswap=${partswap}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>partefi=${partefi}</txt-record>" >> /etc/avahi/services/riso.service
     echo '' >> /etc/avahi/services/riso.service
     echo '  </service>' >> /etc/avahi/services/riso.service
     echo '</service-group>' >> /etc/avahi/services/riso.service
@@ -483,9 +483,9 @@ menu_criar_imagens() {
 
     # De acordo com a opção escolhida, executa funcoes
     case $opcao in
-        "Windows") cria_windows && cria_torrent_windows && windows_criado;;
-        "Linux") criar_linux && cria_torrent_linux && linux_criado;;
-        "Windows Linux") cria_windows && cria_torrent_windows && criar_linux && cria_torrent_linux && imagens_criadas;;
+        "Windows") criar_windows && criar_torrent_windows && windows_criado;;
+        "Linux") criar_linux && criar_torrent_linux && linux_criado;;
+        "Windows Linux") criar_windows && criar_torrent_windows && criar_linux && criar_torrent_linux && imagens_criadas;;
     esac
     
 }
@@ -502,9 +502,9 @@ menu_criar_torrents() {
 
     # De acordo com a opção escolhida, executa funcoes
     case $opcao in
-        "Windows") cria_torrent_windows && torrent_windows_criado;;
-        "Linux") cria_torrent_linux && torrent_linux_criado;;
-        "Windows Linux") cria_torrent_windows && cria_torrent_linux && torrents_criados;;
+        "Windows") criar_torrent_windows && torrent_windows_criado;;
+        "Linux") criar_torrent_linux && torrent_linux_criado;;
+        "Windows Linux") criar_torrent_windows && criar_torrent_linux && torrents_criados;;
     esac
     
 }
