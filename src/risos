@@ -36,7 +36,7 @@ carregar_variaveis() {
 
 #Verifica se o servidor está conectado
 verificar_conexao(){
-    servidor=`ip route | grep src | cut -d ' ' -f12`
+    servidor=`ip route | grep src | cut -d ' ' -f9`
     if [ -z $servidor ]; then
         dialog \
         --title 'Atenção' \
