@@ -3,7 +3,7 @@
 #Variáveis do script
 dir_riso=/usr/riso
 dir_img=$dir_riso/imagens
-img_win=$dir_img/windows.img
+img_win=$dir_img/windows.img.bz2
 img_lin=$dir_img/linux.tar.bz2
 img_efi=$dir_img/efi.tar.bz2
 tor_win=$img_win.torrent
@@ -261,7 +261,7 @@ criar_windows() {
     
 #Cria arquivo .img do windows
     umount /dev/disk/by-uuid/${partwindows} 2> /dev/null
-    ntfsclone -s -O ${img_win} /dev/disk/by-uuid/${partwindows}
+    ntfsclone --save-image --output - /dev/disk/by-uuid/${partwindows} | bzip2 -c > ${img_win}
     
 #Se não conseguiu criar a imagem
     if [ "$?" -ne "0" ]; then
