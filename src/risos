@@ -214,7 +214,7 @@ criar_linux() {
     rm -f ${img_lin}
     rm -f ${tor_lin}
     
-    #Cria arquivo .tar do linux
+    #Cria arquivo tar.bz2 do linux
     umount /mnt 2> /dev/null
     mount /dev/disk/by-uuid/${partlinux} /mnt
     cd /mnt
