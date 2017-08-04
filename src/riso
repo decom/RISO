@@ -56,7 +56,7 @@ instalar_efi(){
         mount /dev/disk/by-uuid/$partefi /mnt
         cd /mnt
         log "Instalação da EFI iniciada."
-        (tar -xvfj $img_efi && log "Fim da instalação da EFI.") || log "ERRO: EFI não foi instalada com sucesso."
+        (tar -jxvf $img_efi && log "Fim da instalação da EFI.") || log "ERRO: EFI não foi instalada com sucesso."
         cd ..
         umount /mnt 2> /dev/null
     else
@@ -95,7 +95,7 @@ instalar() {
 	    mount /dev/disk/by-uuid/$partlinux /mnt
 	    cd /mnt
 	    log "Instalação do Linux iniciada."
-	    (tar -xvfj $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux não foi instalado com sucesso."
+	    (tar -jxvf $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux não foi instalado com sucesso."
 	    cd ..
 	    umount /mnt 2> /dev/null
 
@@ -166,7 +166,7 @@ instalar_linux() {
 	    mount /dev/disk/by-uuid/$partlinux /mnt
 	    cd /mnt
 	    log "Instalação do Linux iniciada."
-	    (tar -xjvf $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux instalou com sucesso."
+	    (tar -jxvf $img_lin && log "Fim da instalação do Linux.") || log "ERRO: Linux instalou com sucesso."
 	    cd ..
 	    umount /mnt 2> /dev/null
 

@@ -199,7 +199,7 @@ criar_efi() {
     umount /mnt 2> /dev/null
     mount /dev/disk/by-uuid/${partefi} /mnt
     cd /mnt
-    tar -cvfj ${img_efi} *
+    tar -jcvf ${img_efi} *
     
     umount /mnt 2> /dev/null
     
@@ -218,7 +218,7 @@ criar_linux() {
     umount /mnt 2> /dev/null
     mount /dev/disk/by-uuid/${partlinux} /mnt
     cd /mnt
-    tar -cvfj ${img_lin} *
+    tar -jcvf ${img_lin} *
     
     umount /mnt 2> /dev/null
     
