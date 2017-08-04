@@ -3,7 +3,7 @@
 #Variáveis do script
 dir_riso=/usr/riso
 dir_img=$dir_riso/imagens
-img_win=$dir_img/windows.img
+img_win=$dir_img/windows.img.bz2
 img_lin=$dir_img/linux.tar.bz2
 img_efi=$dir_img/efi.tar.bz2
 tor_win=$img_win.torrent
@@ -87,7 +87,7 @@ instalar() {
 
 	    #Clona windows.
 	    log "Instalação do Windows iniciada."
-	    (ntfsclone -r $img_win -O /dev/disk/by-uuid/$partwindows && log "Fim da instalação do Windows") || log "ERRO: Windows não foi instalado com sucesso."
+	    (bzcat -c $img_win | ntfsclone --restore-image --overwrite /dev/disk/by-uuid/$partwindows - && log "Fim da instalação do Windows") || log "ERRO: Windows não foi instalado com sucesso."
 
 
 	    #Clona linux.
@@ -132,7 +132,7 @@ instalar_windows() {
 
 	    #Clona windows
 	    log "Instalação do Windows iniciada."
-	    (ntfsclone -r $img_win -O /dev/disk/by-uuid/$partwindows && log "Fim da instalação do Windows") || log "ERRO: Windows não instalou com sucesso."
+	    (bzcat -c $img_win | ntfsclone --restore-image --overwrite /dev/disk/by-uuid/$partwindows -  && log "Fim da instalação do Windows") || log "ERRO: Windows não instalou com sucesso."
 
 	    log "Instalação do Windows finalizada."
         update-grub
@@ -215,7 +215,7 @@ baixa_imagem_windows() {
 
 	#Inicia download da imagen em terminal virtual.
 	log "Inicia o download do torrent do Windows."
-	(wget -O ${tor_win} "http://${servidor}/windows.img.torrent" && log "Download do torrent do Windows finalizado.") || log "ERRO: O torrent do Windows não foi baixado."
+	(wget -O ${tor_win} "http://${servidor}/windows.img.bz2.torrent" && log "Download do torrent do Windows finalizado.") || log "ERRO: O torrent do Windows não foi baixado."
 	log "Baixando imagem EFI."
 	(wget -O ${img_efi} "http://${servidor}/efi.tar.bz2" && log "Imagem EFI baixada com sucesso.") || log "ERRO: Erro ao baixar imagem EFI."
 	#Guarda IP de criação do Torrent
