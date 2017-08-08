@@ -27,7 +27,11 @@ carregar_variaveis() {
 verificar_conexao(){
     servidor=`ip route | grep src | cut -d ' ' -f9`
     if [ -z $servidor ]; then
-        mensagem "O servidor não possui um ip atribuído"
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "O servidor não possui um ip atribuído" \
+        0 0
         exit 1
     fi   
 }
@@ -49,15 +53,27 @@ iniciar_servidor() {
                 rtorrent ${tor_lin} ${tor_win}
                 rm -f /etc/avahi/services/*
             else
-                mensagem "Os torrrents não possuem o mesmo ip do servidor"
+                dialog \
+                --ok-label 'OK' \
+                --title 'Atenção' \
+                --msgbox "Os torrrents não possuem o mesmo ip do servidor" \
+                0 0
                 return 1
             fi
         else
-		mensagem "Não existem torrents prontos"
-		return 1
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Não existem torrents prontos" \
+            0 0
+            return 1
         fi                
     else
-        mensagem "Não existem imagens prontas"
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existem imagens prontas" \
+        0 0
         return 1
     fi    
 }
@@ -78,15 +94,27 @@ iniciar_servidor_windows() {
                 rtorrent ${tor_win}
                 rm -f /etc/avahi/services/*
             else
-                mensagem "O torrrent não possuem o mesmo ip do servidor"
+                dialog \
+                --ok-label 'OK' \
+                --title 'Atenção' \
+                --msgbox "O torrrent não possui o mesmo ip do servidor" \
+                0 0
                 return 1
             fi
         else
-            mensagem "Não existe torrent pronto"
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Não existe torrent prontos" \
+            0 0
             return 1
         fi                
     else
-        mensagem "Não existe imagem pronta"
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existe imagem pronta" \
+        0 0
         return 1
     fi    
 }
@@ -107,17 +135,29 @@ iniciar_servidor_linux() {
                 rtorrent ${tor_lin}
                 rm -f /etc/avahi/services/*
             else
-                mensagem "O torrrent não possuem o mesmo ip do servidor"
+                dialog \
+                --ok-label 'OK' \
+                --title 'Atenção' \
+                --msgbox "O torrrent não possui o mesmo ip do servidor" \
+                0 0
                 return 1
             fi
         else
-            mensagem "Não existe torrent pronto"
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Não existe torrent prontos" \
+            0 0
             return 1
         fi                
     else
-        mensagem "Não existe imagem pronta"
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existe imagem pronta" \
+        0 0
         return 1
-    fi
+    fi 
 }
 
 
@@ -155,7 +195,11 @@ criar_torrent_linux() {
         #Guarda IP de criação do Torrent
         echo $servidor > $dir_img/linux.ip 
     else
-        mensagem "Não existe imagem pronta"
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existe imagem pronta" \
+        0 0
         return 1
     fi    
 }
@@ -170,7 +214,11 @@ criar_windows() {
     umount /dev/disk/by-uuid/${partwindows} 2> /dev/null
     ntfsclone --save-image --output - /dev/disk/by-uuid/${partwindows} | bzip2 -c > ${img_win}
     if [ "$?" -ne "0" ]; then
-        mensagem "Não foi possível criar imagem do Windows\nVerifique os parâmetros do arquivo riso.cfg"
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não foi possível criar imagem do Windows\nVerifique os parâmetros do arquivo riso.cfg" \
+        0 0
         return 1
     fi
     
@@ -184,7 +232,11 @@ criar_torrent_windows() {
         #Guarda IP de criação do Torrent
         echo $servidor > $dir_img/windows.ip 
     else
-        mensagem "Não existe imagem pronta"
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existe imagem pronta" \
+        0 0
         return 1
     fi
 }
@@ -225,21 +277,11 @@ criar_riso_service() {
 }
 
 
-mensagem() {
-    dialog \
-    --ok-label 'OK' \
-    --title 'Atenção' \
-    --msgbox $1 \
-        0 0
-}
-
- 
 menu_iniciar_servidor() {
-
     opcao=$( dialog --stdout \
     --ok-label 'Confirmar'   \
-    --checklist 'Quais imagens deseja disponibilizar para o download na rede:' \
-    0 0 0 \
+    --checklist 'Selecione quais imagens deseja disponibilizar para o download na rede:' \
+    0 45 0 \
     Windows '' ON  \
     Linux '' ON )
 
@@ -248,36 +290,32 @@ menu_iniciar_servidor() {
         "Windows") iniciar_servidor_windows;;
         "Linux") iniciar_servidor_linux;;
         "Windows Linux") iniciar_servidor;;
-    esac
-    
+    esac   
 }
 
 
 menu_criar_imagens() {
-
     opcao=$( dialog --stdout \
     --ok-label 'Confirmar'   \
-    --checklist 'Quais imagens deseja criar:' \
-    0 0 0 \
+    --checklist 'Selecione quais imagens deseja criar:' \
+    0 45 0 \
     Windows '' ON  \
     Linux '' ON  )
 
     # De acordo com a opção escolhida, executa funcoes
     case $opcao in
-        "Windows") criar_windows && criar_torrent_windows && message "Imagem criada";;
-        "Linux") criar_linux && criar_torrent_linux && linux_criado;;
-        "Windows Linux") criar_windows && criar_torrent_windows && criar_linux && criar_torrent_linux && imagens_criadas;;
-    esac
-    
+        "Windows") criar_windows && message "Imagem criada";;
+        "Linux") criar_linux && linux_criado;;
+        "Windows Linux") criar_windows && criar_linux && imagens_criadas;;
+    esac   
 }
 
 
 menu_criar_torrents() {
-
     opcao=$( dialog --stdout \
     --ok-label 'Confirmar'   \
-    --checklist 'Quais torrents deseja criar:' \
-    0 0 0 \
+    --checklist 'Selecione quais torrents deseja criar:' \
+    0 45 0 \
     Windows '' ON  \
     Linux '' ON  )
 
@@ -286,21 +324,19 @@ menu_criar_torrents() {
         "Windows") criar_torrent_windows && torrent_windows_criado;;
         "Linux") criar_torrent_linux && torrent_linux_criado;;
         "Windows Linux") criar_torrent_windows && criar_torrent_linux && torrents_criados;;
-    esac
-    
+    esac   
 }
 
 
 menu() {
-
     while : ; do
     opcao=$(
         dialog --stdout                         \
         --ok-label 'Confirmar'                  \
         --cancel-label 'Sair'                   \
         --title 'RISOS - 1.0'                   \
-        --menu 'Escolha o que voce quer fazer:' \
-            0 0 0                               \
+        --menu 'Selecione uma opção:' \
+            0 45 0                               \
             1 'Iniciar servidor'                \
             2 'Criar imagens'                   \
             3 'Criar torrents'                  )
@@ -315,18 +351,15 @@ menu() {
             3) verificar_conexao && menu_criar_torrents;;
         esac    
 
-    done
-    
+    done    
 }
 
 
 #Verifica se usuário é root antes de iniciar o risos.
 USER=`id -u`
 if [ $USER == '0' ]; then
-    log "Iniciando RISOS -------------------------------------------------------"
     rm -f /etc/avahi/services/*
     carregar_variaveis && menu
-    log "Finalizando RISOS -----------------------------------------------------"
     clear
 else
     echo "Este script deve ser executado com o usuario root"
