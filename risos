@@ -176,16 +176,25 @@ criar_efi() {
 
 criar_linux() {
     carregar_variaveis;
-    echo "Removendo imagem antiga do linux..."
-    rm -f ${img_lin}
-    rm -f ${tor_lin} 
-    #Cria arquivo tar.bz2 do linux
-    umount /mnt 2> /dev/null
-    mount /dev/disk/by-uuid/${partlinux} /mnt
-    cd /mnt
-    tar -jcvf ${img_lin} *   
-    umount /mnt 2> /dev/null
-    criar_efi
+    if [ -e "/dev/disk/by-uuid/${partlinux}" ]; then
+        echo "Removendo imagem antiga do linux..."
+        rm -f ${img_lin}
+        rm -f ${tor_lin}
+        #Cria arquivo tar.bz2 do linux
+        umount /mnt 2> /dev/null
+        mount /dev/disk/by-uuid/${partlinux} /mnt
+        cd /mnt
+        tar -jcvf ${img_lin} *
+        umount /mnt 2> /dev/null
+        criar_efi
+    else
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não foi possível criar imagem\nVerifique os parâmetros do arquivo riso.cfg" \
+        0 0
+        return 1
+    fi
 }
 
 
@@ -207,17 +216,18 @@ criar_torrent_linux() {
 
 criar_windows() {
     carregar_variaveis;
-    echo "Removendo imagem antiga do windows..."
-    rm -f ${img_win}
-    rm -f ${tor_win}    
-    #Cria arquivo .img.bz2 do windows
-    umount /dev/disk/by-uuid/${partwindows} 2> /dev/null
-    ntfsclone --save-image --output - /dev/disk/by-uuid/${partwindows} | bzip2 -c > ${img_win}
-    if [ "$?" -ne "0" ]; then
+    if [ -e "/dev/disk/by-uuid/${partwindows}" ]; then
+        echo "Removendo imagem antiga do windows..."
+        rm -f ${img_win}
+        rm -f ${tor_win}
+        #Cria arquivo .img.bz2 do windows
+        umount /dev/disk/by-uuid/${partwindows} 2> /dev/null
+        ntfsclone --save-image --output - /dev/disk/by-uuid/${partwindows} | bzip2 -c > ${img_win}
+    else
         dialog \
         --ok-label 'OK' \
         --title 'Atenção' \
-        --msgbox "Não foi possível criar imagem do Windows\nVerifique os parâmetros do arquivo riso.cfg" \
+        --msgbox "Não foi possível criar imagem\nVerifique os parâmetros do arquivo riso.cfg" \
         0 0
         return 1
     fi
