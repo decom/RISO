@@ -7,7 +7,6 @@
 dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog findutils grub-efi mount net-tools ntfs-3g os-prober psmisc rtorrent sed ssh util-linux"
 
 instalar() {
-    dirpath=`dirname $0`
 
     echo "Atualizando sistema operacional"
     apt-get update
@@ -23,6 +22,8 @@ instalar() {
     	fi
     done
     
+    dirpath=`dirname $0`
+
     echo "Criando árvore de diretórios"
     mkdir -p /usr/riso
     mkdir -p /usr/riso/imagens
