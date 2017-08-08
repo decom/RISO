@@ -314,9 +314,24 @@ menu_criar_imagens() {
 
     # De acordo com a opção escolhida, executa funcoes
     case $opcao in
-        "Windows") criar_windows && message "Imagem criada";;
-        "Linux") criar_linux && linux_criado;;
-        "Windows Linux") criar_windows && criar_linux && imagens_criadas;;
+        "Windows") criar_windows && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Imagem criada" \
+            0 0;;
+        "Linux") criar_linux && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Imagem criada" \
+            0 0;;
+        "Windows Linux") criar_windows && criar_linux && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Imagens criadas" \
+            0 0;;
     esac   
 }
 
@@ -331,9 +346,24 @@ menu_criar_torrents() {
 
     # De acordo com a opção escolhida, executa funcoes
     case $opcao in
-        "Windows") criar_torrent_windows && torrent_windows_criado;;
-        "Linux") criar_torrent_linux && torrent_linux_criado;;
-        "Windows Linux") criar_torrent_windows && criar_torrent_linux && torrents_criados;;
+        "Windows") criar_torrent_windows && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Torrent criado" \
+            0 0;;
+        "Linux") criar_torrent_linux && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Torrent criado" \
+            0 0;;
+        "Windows Linux") criar_torrent_windows && criar_torrent_linux && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Torrents criados" \
+            0 0;;
     esac   
 }
 
@@ -344,7 +374,7 @@ menu() {
         dialog --stdout                         \
         --ok-label 'Confirmar'                  \
         --cancel-label 'Sair'                   \
-        --title 'RISOS - 1.0'                   \
+        --title 'RISOS UEFI - 0.1'                   \
         --menu 'Selecione uma opção:' \
             0 45 0                               \
             1 'Iniciar servidor'                \
