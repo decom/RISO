@@ -7,6 +7,7 @@
 dependencias="apache2 avahi-utils avahi-daemon bash bittorrent coreutils dialog findutils grub-efi mount net-tools ntfs-3g os-prober psmisc rtorrent sed ssh util-linux"
 
 instalar() {
+    dirpath=`dirname $0`
 
     echo "Atualizando sistema operacional"
     apt-get update
@@ -27,27 +28,33 @@ instalar() {
     mkdir -p /usr/riso/imagens
 
     echo "Instalando scritps"
-    cp ./src/riso /usr/riso/riso
-    cp ./src/quitRTorrent.sh /usr/riso/quitRTorrent.sh
-    chmod +x /usr/riso/quitRTorrent.sh
-    chmod +x /usr/riso/riso
-    cp ./conf/.rtorrent.rc /root
-    cp ./src/risos /usr/riso/risos
-    chmod +x /usr/riso/risos
-    cp ./conf/BCD /usr/riso/
-    cp ./conf/riso.cfg /usr/riso
+    cp $dirpath/riso /usr/riso/riso
     echo '#!/bin/bash' > /usr/bin/riso
     echo '/usr/riso/riso $@' >> /usr/bin/riso
+    chmod +x /usr/riso/riso
     chmod +x /usr/bin/riso
+
+    cp $dirpath/risos /usr/riso/risos
     echo '#!/bin/bash' > /usr/bin/risos
     echo '/usr/riso/risos $@' >> /usr/bin/risos
+    chmod +x /usr/riso/risos
     chmod +x /usr/bin/risos
+
+    echo '#!/bin/bash' > /usr/riso/quitRTorrent.sh
+    echo 'pkill rtorrent' >> /usr/riso/quitRTorrent.sh
+    chmod +x /usr/riso/quitRTorrent.sh
+
+    cp $dirpath/rtorrent.rc /root/.rtorrent.rc
+    cp $dirpath/riso.cfg /usr/riso/riso.cfg
+
     
-    echo "Configurando sistema de boot" 
+    echo "Configurando sistema de boot"
     sed /'GRUB_DISTRIBUTOR='/d -i /etc/default/grub
     echo 'GRUB_DISTRIBUTOR=Recovery' >> /etc/default/grub
     sed /'GRUB_TIMEOUT='/d -i /etc/default/grub
     echo 'GRUB_TIMEOUT=-1' >> /etc/default/grub
+    sed /'GRUB_BACKGROUD='/d -i /etc/default/grub
+    echo 'GRUB_BACKGROUD="/grub.png"' >> /etc/default/grub
 
     rm -f /etc/grub.d/20_memtest86+
     if [ -e /etc/grub.d/10_linux ]; then
@@ -56,7 +63,9 @@ instalar() {
     update-grub
     
     echo "Configurando serviços do sistema"
-    cp ./src/RISOServiceRemoval /etc/init.d/
+    echo '#!/bin/bash' > /etc/init.d/RISOServiceRemoval
+    echo 'rm /etc/avahi/services/*' >> /etc/init.d/RISOServiceRemoval
+    echo 'exit 0' >> /etc/init.d/RISOServiceRemoval
     chmod 755 /etc/init.d/RISOServiceRemoval
     update-rc.d RISOServiceRemoval defaults 2> /dev/null
     sed s/'use-ipv6=yes'/'use-ipv6=no'/g -i /etc/avahi/avahi-daemon.conf   
