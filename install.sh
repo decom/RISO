@@ -46,6 +46,7 @@ instalar() {
 
     cp $dirpath/rtorrent.rc /root/.rtorrent.rc
     cp $dirpath/riso.cfg /usr/riso/riso.cfg
+    cp $dirpath/grub.png /grub.png
 
     
     echo "Configurando sistema de boot"
