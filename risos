@@ -167,7 +167,7 @@ criar_efi() {
     rm -f ${img_efi}
     #Cria arquivo .tar.bz2 EFI
     umount /mnt 2> /dev/null
-    mount /dev/disk/by-uuid/${partefi} /mnt
+    mount /dev/disk/by-uuid/${partefi^^} /mnt
     cd /mnt
     tar -jcvf ${img_efi} *   
     umount /mnt 2> /dev/null
@@ -176,13 +176,13 @@ criar_efi() {
 
 criar_linux() {
     carregar_variaveis;
-    if [ -e "/dev/disk/by-uuid/${partlinux}" ]; then
+    if [ -e "/dev/disk/by-uuid/${partlinux,,}" ]; then
         echo "Removendo imagem antiga do linux..."
         rm -f ${img_lin}
         rm -f ${tor_lin}
         #Cria arquivo tar.bz2 do linux
         umount /mnt 2> /dev/null
-        mount /dev/disk/by-uuid/${partlinux} /mnt
+        mount /dev/disk/by-uuid/${partlinux,,} /mnt
         cd /mnt
         tar -jcvf ${img_lin} *
         umount /mnt 2> /dev/null
@@ -216,13 +216,13 @@ criar_torrent_linux() {
 
 criar_windows() {
     carregar_variaveis;
-    if [ -e "/dev/disk/by-uuid/${partwindows}" ]; then
+    if [ -e "/dev/disk/by-uuid/${partwindows^^}" ]; then
         echo "Removendo imagem antiga do windows..."
         rm -f ${img_win}
         rm -f ${tor_win}
         #Cria arquivo .img.bz2 do windows
-        umount /dev/disk/by-uuid/${partwindows} 2> /dev/null
-        ntfsclone --save-image --output - /dev/disk/by-uuid/${partwindows} | bzip2 -c > ${img_win}
+        umount /dev/disk/by-uuid/${partwindows^^} 2> /dev/null
+        ntfsclone --save-image --output - /dev/disk/by-uuid/${partwindows^^} | bzip2 -c > ${img_win}
     else
         dialog \
         --ok-label 'OK' \
@@ -289,13 +289,12 @@ criar_riso_service() {
 
 menu_iniciar_servidor() {
     opcao=$( dialog --stdout \
-    --ok-label 'Confirmar'   \
-    --checklist 'Selecione quais imagens deseja disponibilizar para o download na rede:' \
-    0 45 0 \
-    Windows '' ON  \
-    Linux '' ON )
+        --ok-label 'Confirmar'   \
+        --checklist 'Selecione quais imagens deseja disponibilizar para o download na rede:' \
+            0 45 0 \
+            Windows '' ON  \
+            Linux '' ON )
 
-    # De acordo com a opção escolhida, executa funcoes
     case $opcao in
         "Windows") iniciar_servidor_windows;;
         "Linux") iniciar_servidor_linux;;
@@ -306,30 +305,29 @@ menu_iniciar_servidor() {
 
 menu_criar_imagens() {
     opcao=$( dialog --stdout \
-    --ok-label 'Confirmar'   \
-    --checklist 'Selecione quais imagens deseja criar:' \
-    0 45 0 \
-    Windows '' ON  \
-    Linux '' ON  )
+        --ok-label 'Confirmar'   \
+        --checklist 'Selecione quais imagens deseja criar:' \
+            0 45 0 \
+            Windows '' ON  \
+            Linux '' ON  )
 
-    # De acordo com a opção escolhida, executa funcoes
     case $opcao in
         "Windows") criar_windows && \
             dialog \
             --ok-label 'OK' \
-            --title 'Atenção' \
+            --title 'Sucesso' \
             --msgbox "Imagem criada" \
             0 0;;
         "Linux") criar_linux && \
             dialog \
             --ok-label 'OK' \
-            --title 'Atenção' \
+            --title 'Sucesso' \
             --msgbox "Imagem criada" \
             0 0;;
         "Windows Linux") criar_windows && criar_linux && \
             dialog \
             --ok-label 'OK' \
-            --title 'Atenção' \
+            --title 'Sucesso' \
             --msgbox "Imagens criadas" \
             0 0;;
     esac   
@@ -338,30 +336,29 @@ menu_criar_imagens() {
 
 menu_criar_torrents() {
     opcao=$( dialog --stdout \
-    --ok-label 'Confirmar'   \
-    --checklist 'Selecione quais torrents deseja criar:' \
-    0 45 0 \
-    Windows '' ON  \
-    Linux '' ON  )
+        --ok-label 'Confirmar'   \
+        --checklist 'Selecione quais torrents deseja criar:' \
+            0 45 0 \
+            Windows '' ON  \
+            Linux '' ON  )
 
-    # De acordo com a opção escolhida, executa funcoes
     case $opcao in
         "Windows") criar_torrent_windows && \
             dialog \
             --ok-label 'OK' \
-            --title 'Atenção' \
+            --title 'Sucesso' \
             --msgbox "Torrent criado" \
             0 0;;
         "Linux") criar_torrent_linux && \
             dialog \
             --ok-label 'OK' \
-            --title 'Atenção' \
+            --title 'Sucesso' \
             --msgbox "Torrent criado" \
             0 0;;
         "Windows Linux") criar_torrent_windows && criar_torrent_linux && \
             dialog \
             --ok-label 'OK' \
-            --title 'Atenção' \
+            --title 'Sucesso' \
             --msgbox "Torrents criados" \
             0 0;;
     esac   
@@ -370,27 +367,24 @@ menu_criar_torrents() {
 
 menu() {
     while : ; do
-    opcao=$(
-        dialog --stdout                         \
-        --ok-label 'Confirmar'                  \
-        --cancel-label 'Sair'                   \
-        --title 'RISOS UEFI - 0.1'                   \
-        --menu 'Selecione uma opção:' \
-            0 45 0                               \
-            1 'Iniciar servidor'                \
-            2 'Criar imagens'                   \
-            3 'Criar torrents'                  )
-    
-        # ESC, sai do programa...
+        opcao=$(
+            dialog --stdout                         \
+            --ok-label 'Confirmar'                  \
+            --cancel-label 'Sair'                   \
+            --title 'RISOS UEFI - 0.1'                   \
+            --menu 'Selecione uma opção:' \
+                0 45 0                               \
+                1 'Iniciar servidor'                \
+                2 'Criar imagens'                   \
+                3 'Criar torrents'                  )
+
         [ $? -ne 0 ] && break
-    
-        # De acordo com a opção escolhida, executa funçao
+
         case $opcao in
             1) verificar_conexao && menu_iniciar_servidor;;
             2) menu_criar_imagens;;
             3) verificar_conexao && menu_criar_torrents;;
-        esac    
-
+        esac
     done    
 }
 
