@@ -97,7 +97,7 @@ instalar_windows() {
 instalar_linux() {
     if [ -e ${img_lin} ]; then
         #Carrega as variáveis
-        souce $riso_cfg
+        source $riso_cfg
 
         #Desmonta a partição do linux.
         umount /dev/disk/by-uuid/${partlinux,,} 2> /dev/null
