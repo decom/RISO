@@ -1,0 +1,389 @@
+#!/bin/bash
+
+#Variáveis do script
+dir_riso=/usr/riso
+dir_img=$dir_riso/imagens
+img_win=$dir_img/windows.img.bz2
+img_lin=$dir_img/linux.tar.bz2
+tor_win=$img_win.torrent
+tor_lin=$img_lin.torrent
+dir_www=/var/www/html
+riso_cfg=$dir_riso/riso.cfg
+
+
+carregar_variaveis() {
+    source $riso_cfg
+    #Tamanho das imagens criadas no servidor.
+    if [ -e ${img_win} ]; then
+        tamwindows=`du ${img_win} | cut -f1`
+    fi
+    if [ -e ${img_lin} ]; then
+        tamlinux=`du ${img_lin} | cut -f1`
+    fi
+    return 0
+}
+
+
+verificar_conexao(){
+    servidor=`ip route | grep src | cut -d ' ' -f9`
+    if [ -z $servidor ]; then
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "O servidor não possui um ip atribuído" \
+        0 0
+        exit 1
+    fi
+}
+
+
+iniciar_servidor() {
+    carregar_variaveis;
+    if [ -e ${img_win} -a -e ${img_lin} ]; then
+        if [ -e "${tor_lin}" -a -e "${tor_win}" ]; then
+            Windows_IP=`grep "$servidor" ${dir_img}/windows.ip | wc -l`
+            Linux_IP=`grep "$servidor" ${dir_img}/linux.ip | wc -l`
+            if [[ 1 -eq $Windows_IP && 1 -eq $Linux_IP ]]; then
+                criar_riso_service;
+                cp "${tor_lin}" "${tor_win}" "${dir_www}"
+                cp "${riso_cfg}" "${dir_www}"
+                bttrack --port 6969 --dfile dstate > /dev/null &
+                cd ${dir_img}
+                rtorrent ${tor_lin} ${tor_win}
+                rm -f /etc/avahi/services/*
+            else
+                dialog \
+                --ok-label 'OK' \
+                --title 'Atenção' \
+                --msgbox "Os torrrents não possuem o mesmo ip do servidor" \
+                0 0
+                return 1
+            fi
+        else
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Não existem torrents prontos" \
+            0 0
+            return 1
+        fi
+    else
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existem imagens prontas" \
+        0 0
+        return 1
+    fi
+}
+
+
+iniciar_servidor_windows() {
+    carregar_variaveis;
+    if [ -e ${img_win} ]; then
+        if [ -e "${tor_win}" ]; then
+            Windows_IP=`grep "$servidor" ${dir_img}/windows.ip | wc -l`
+               if [ 1 -eq $Windows_IP ]; then
+                criar_riso_service;
+                cp "${tor_win}" "${dir_www}"
+                cp "${riso_cfg}" "${dir_www}"
+                bttrack --port 6969 --dfile dstate > /dev/null &
+                cd ${dir_img}
+                rtorrent ${tor_win}
+                rm -f /etc/avahi/services/*
+            else
+                dialog \
+                --ok-label 'OK' \
+                --title 'Atenção' \
+                --msgbox "O torrrent do windows não possui o mesmo ip do servidor" \
+                0 0
+                return 1
+            fi
+        else
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Não existe torrent do windows pronto" \
+            0 0
+            return 1
+        fi
+    else
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existe imagem do windows pronta" \
+        0 0
+        return 1
+    fi
+}
+
+
+iniciar_servidor_linux() {
+    carregar_variaveis;
+    if [ -e ${img_lin} ]; then
+        if [ -e "${tor_lin}" ]; then
+            Linux_IP=`grep "$servidor" ${dir_img}/linux.ip | wc -l`
+               if [ 1 -eq $Linux_IP ]; then
+                criar_riso_service;
+                cp "${tor_lin}" "${dir_www}"
+                cp "${riso_cfg}" "${dir_www}"
+                bttrack --port 6969 --dfile dstate > /dev/null &
+                cd ${dir_img}
+                rtorrent ${tor_lin}
+                rm -f /etc/avahi/services/*
+                return 0
+            else
+                dialog \
+                --ok-label 'OK' \
+                --title 'Atenção' \
+                --msgbox "O torrrent do linux não possui o mesmo ip do servidor" \
+                0 0
+                return 1
+            fi
+        else
+            dialog \
+            --ok-label 'OK' \
+            --title 'Atenção' \
+            --msgbox "Não existe torrent do linux pronto" \
+            0 0
+            return 1
+        fi
+    else
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existe imagem do linux pronta" \
+        0 0
+        return 1
+    fi
+}
+
+
+criar_linux() {
+    carregar_variaveis;
+    if [ -e "/dev/disk/by-uuid/${partlinux,,}" ]; then
+        echo "Removendo a imagem antiga do linux..."
+        rm -f ${img_lin}
+        rm -f ${tor_lin}
+        #Cria o arquivo tar.bz2 do linux
+        umount /mnt 2> /dev/null
+        mount /dev/disk/by-uuid/${partlinux,,} /mnt
+        cd /mnt
+        tar -jcvf ${img_lin} *
+        umount /mnt 2> /dev/null
+        return 0
+    else
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não foi possível criar a imagem do linux\nVerifique os parâmetros do arquivo riso.cfg" \
+        0 0
+        return 1
+    fi
+}
+
+
+criar_torrent_linux() {
+    if [ -e $img_lin ]; then
+        btmakemetafile.bittorrent ${img_lin} http://${servidor}:6969/announce 2> /dev/null
+        #Guarda o IP de criação do Torrent
+        echo $servidor > $dir_img/linux.ip
+        return 0
+    else
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existe imagem do linux pronta" \
+        0 0
+        return 1
+    fi
+}
+
+
+criar_windows() {
+    carregar_variaveis;
+    if [ -e "/dev/disk/by-uuid/${partwindows^^}" ]; then
+        echo "Removendo a imagem antiga do windows..."
+        rm -f ${img_win}
+        rm -f ${tor_win}
+        #Cria arquivo img.bz2 do windows
+        umount /dev/disk/by-uuid/${partwindows^^} 2> /dev/null
+        ntfsclone --save-image --output - /dev/disk/by-uuid/${partwindows^^} | bzip2 -c > ${img_win}
+        return 0
+    else
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não foi possível criar a imagem do windows\nVerifique os parâmetros do arquivo riso.cfg" \
+        0 0
+        return 1
+    fi 
+}
+
+
+criar_torrent_windows() {
+    if [ -e ${img_win} ]; then
+        btmakemetafile.bittorrent ${img_win} http://${servidor}:6969/announce 2> /dev/null
+        #Guarda o IP de criação do Torrent
+        echo $servidor > $dir_img/windows.ip
+        return 0
+    else
+        dialog \
+        --ok-label 'OK' \
+        --title 'Atenção' \
+        --msgbox "Não existe imagem do windows pronta" \
+        0 0
+        return 1
+    fi
+}
+
+
+criar_riso_service() {
+    echo "Criando o arquivo de configuração..."
+    echo '<?xml version="1.0" standalone="no"?><!--*-nxml-*-->' > /etc/avahi/services/riso.service
+    echo '<!DOCTYPE service-group SYSTEM "avahi-service.dtd">' >> /etc/avahi/services/riso.service
+    echo '' >> /etc/avahi/services/riso.service
+    echo '<!--riso.service -->' >> /etc/avahi/services/riso.service
+    echo '' >> /etc/avahi/services/riso.service
+    echo '<!--' >> /etc/avahi/services/riso.service
+    echo '  Arquivo com as variáveis de configuração do riso.' >> /etc/avahi/services/riso.service
+    echo '  Essas variáveis são usadas para efetuar a comunicação do servidor riso(risos) com os clientes(riso).' >> /etc/avahi/services/riso.service
+    echo '  Para mais informações sobre o processo ver http://avahi.org' >> /etc/avahi/services/riso.service
+    echo '-->' >> /etc/avahi/services/riso.service
+    echo '' >> /etc/avahi/services/riso.service
+    echo '<service-group>' >> /etc/avahi/services/riso.service
+    echo '  <name>Servidor RISO DECOM</name>' >> /etc/avahi/services/riso.service
+    echo '' >> /etc/avahi/services/riso.service
+    echo '  <service>' >> /etc/avahi/services/riso.service
+    echo '    <!--Nome do serviço-->' >> /etc/avahi/services/riso.service
+    echo "    <type>_DECOM_RISO._tcp</type>" >> /etc/avahi/services/riso.service
+    echo '' >> /etc/avahi/services/riso.service
+    echo '    <!--Campo não é usado-->' >> /etc/avahi/services/riso.service
+    echo '    <port>1234</port>' >> /etc/avahi/services/riso.service
+    echo '' >> /etc/avahi/services/riso.service
+    echo '    <!--Ip do servidor-->' >> /etc/avahi/services/riso.service # modifição para guardar o ip do servidor
+    echo "    <txt-record>servidor=$servidor</txt-record>" >> /etc/avahi/services/riso.service
+    echo '' >> /etc/avahi/services/riso.service
+    echo '    <!--Variáveis com o tamanho das imagens geradas no servidor-->' >> /etc/avahi/services/riso.service
+    echo "    <txt-record>tamlinux=${tamlinux}</txt-record>" >> /etc/avahi/services/riso.service
+    echo "    <txt-record>tamwindows=${tamwindows}</txt-record>" >> /etc/avahi/services/riso.service
+    echo '' >> /etc/avahi/services/riso.service
+    echo '  </service>' >> /etc/avahi/services/riso.service
+    echo '</service-group>' >> /etc/avahi/services/riso.service
+}
+
+
+menu_iniciar_servidor() {
+    opcao=$( dialog --stdout \
+        --ok-label 'Confirmar'   \
+        --checklist 'Selecione as imagens que serão disponibilizadas para o download na rede:' \
+            0 60 0 \
+            Windows '' ON  \
+            Linux '' ON )
+
+    case $opcao in
+        "Windows") iniciar_servidor_windows;;
+        "Linux") iniciar_servidor_linux;;
+        "Windows Linux") iniciar_servidor;;
+    esac
+}
+
+
+menu_criar_imagens() {
+    opcao=$( dialog --stdout \
+        --ok-label 'Confirmar'   \
+        --checklist 'Selecione as imagens que serão criadas:' \
+            0 60 0 \
+            Windows '' ON  \
+            Linux '' ON  )
+
+    case $opcao in
+        "Windows") criar_windows && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Sucesso' \
+            --msgbox "A imagem do windows foi criada com sucesso" \
+            0 0;;
+        "Linux") criar_linux && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Sucesso' \
+            --msgbox "A imagem do linux foi criada com sucesso" \
+            0 0;;
+        "Windows Linux") criar_windows && criar_linux && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Sucesso' \
+            --msgbox "As imagens do windows e linux foram criadas com sucesso" \
+            0 0;;
+    esac
+}
+
+
+menu_criar_torrents() {
+    opcao=$( dialog --stdout \
+        --ok-label 'Confirmar'   \
+        --checklist 'Selecione os torrents que serão criados:' \
+            0 60 0 \
+            Windows '' ON  \
+            Linux '' ON  )
+
+    case $opcao in
+        "Windows") criar_torrent_windows && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Sucesso' \
+            --msgbox "O torrent do windows foi criado com sucesso" \
+            0 0;;
+        "Linux") criar_torrent_linux && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Sucesso' \
+            --msgbox "O torrent do linux foi criado com sucesso" \
+            0 0;;
+        "Windows Linux") criar_torrent_windows && criar_torrent_linux && \
+            dialog \
+            --ok-label 'OK' \
+            --title 'Sucesso' \
+            --msgbox "Os torrents do windows e linux foram criados com sucesso" \
+            0 0;;
+    esac
+}
+
+
+menu() {
+    version=`cat $dir_riso/riso.version`
+    while : ; do
+        opcao=$(
+            dialog --stdout                                                      \
+            --ok-label 'Confirmar'                                               \
+            --cancel-label 'Sair'                                                \
+            --title "RISOS MBR - ${version}"                                    \
+            --menu 'Selecione uma opção:'                                        \
+                0 60 0                                                           \
+                1 'Iniciar o servidor RISOS'                                     \
+                2 'Criar as imagens dos sistemas operacionais'                   \
+                3 'Criar os torrents dos sistemas operacionais'                  )
+
+        [ $? -ne 0 ] && break
+
+        case $opcao in
+            1) verificar_conexao && menu_iniciar_servidor;;
+            2) menu_criar_imagens;;
+            3) verificar_conexao && menu_criar_torrents;;
+        esac
+    done
+}
+
+
+#Verifica se usuário é root antes de iniciar o risos.
+USER=`id -u`
+if [ $USER == '0' ]; then
+    rm -f /etc/avahi/services/*
+    carregar_variaveis && menu
+    clear
+else
+    echo "Este script deve ser executado com o usuário root"
+    echo "\"Grandes scripts vêm com grandes responsabilidades.\" - Uncle Juan"
+    exit 1
+fi
