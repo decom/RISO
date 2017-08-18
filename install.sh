@@ -57,8 +57,6 @@ instalar() {
     echo 'GRUB_DISTRIBUTOR="Recovery RISO MBR - '${version}'"' >> /etc/default/grub
     sed /'GRUB_TIMEOUT='/d -i /etc/default/grub
     echo 'GRUB_TIMEOUT=-1' >> /etc/default/grub
-    sed /'GRUB_BACKGROUND='/d -i /etc/default/grub
-    echo 'GRUB_BACKGROUND="/grub.png"' >> /etc/default/grub
 
     rm -f /etc/grub.d/20_memtest86+
     if [ -e /etc/grub.d/10_linux ]; then
